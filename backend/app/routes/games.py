@@ -184,6 +184,23 @@ async def delete_game(
     db.commit()
 
 
+@router.get("/{game_id}/conversations", response_model=list[ConversationOut])
+async def get_conversations(
+    game_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get conversation history for a game, ordered chronologically."""
+    game = _get_user_game(db, game_id, user.id)
+    conversations = (
+        db.query(Conversation)
+        .filter(Conversation.game_id == game.id)
+        .order_by(Conversation.created_at.asc())
+        .all()
+    )
+    return conversations
+
+
 @router.get("/{game_id}/public", response_model=GamePublicOut)
 async def get_public_game(
     game_id: str,

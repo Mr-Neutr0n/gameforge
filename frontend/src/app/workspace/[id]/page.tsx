@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import AppLayout from "@/components/AppLayout";
 import GamePreview from "@/components/GamePreview";
 import ActivityFeed from "@/components/ActivityFeed";
+import ConversationHistory from "@/components/ConversationHistory";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import MessageInput from "@/components/MessageInput";
 import {
@@ -12,6 +13,7 @@ import {
   streamGameGeneration,
   streamGameIteration,
   type SSEEvent,
+  type Conversation,
   type GameWithConversation,
 } from "@/lib/api";
 
@@ -22,6 +24,7 @@ export default function WorkspacePage() {
 
   const [game, setGame] = useState<GameWithConversation | null>(null);
   const [gameCode, setGameCode] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [events, setEvents] = useState<SSEEvent[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [startTime, setStartTime] = useState<number | undefined>(undefined);
@@ -39,6 +42,10 @@ export default function WorkspacePage() {
         setGame(g);
         if (g.game_code) {
           setGameCode(g.game_code);
+        }
+        // Load stored conversation history
+        if (g.conversations && g.conversations.length > 0) {
+          setConversations(g.conversations);
         }
       })
       .catch(() => {
@@ -81,6 +88,14 @@ export default function WorkspacePage() {
           },
           onComplete: () => {
             setIsGenerating(false);
+            // Refresh conversation history from DB after generation
+            getGame(gameId)
+              .then((g) => {
+                if (g.conversations) setConversations(g.conversations);
+                // Clear live events since they're now in stored history
+                setEvents([]);
+              })
+              .catch(() => {});
           },
         },
       );
@@ -149,6 +164,14 @@ export default function WorkspacePage() {
         },
         onComplete: () => {
           setIsGenerating(false);
+          // Refresh conversation history from DB after iteration
+          getGame(gameId)
+            .then((g) => {
+              if (g.conversations) setConversations(g.conversations);
+              // Clear live events since they're now in stored history
+              setEvents([]);
+            })
+            .catch(() => {});
         },
       });
 
@@ -169,6 +192,7 @@ export default function WorkspacePage() {
         sidebar={
           <WorkspaceSidebar
             gameId={gameId}
+            conversations={conversations}
             events={events}
             isGenerating={isGenerating}
             startTime={startTime}
@@ -193,6 +217,7 @@ export default function WorkspacePage() {
 
 function WorkspaceSidebar({
   gameId,
+  conversations,
   events,
   isGenerating,
   startTime,
@@ -201,6 +226,7 @@ function WorkspaceSidebar({
   onSendMessage,
 }: {
   gameId: string;
+  conversations: Conversation[];
   events: SSEEvent[];
   isGenerating: boolean;
   startTime?: number;
@@ -218,8 +244,12 @@ function WorkspaceSidebar({
         </span>
       </div>
 
-      {/* Activity feed */}
+      {/* Scrollable area for conversation history + live activity feed */}
       <div className="flex-1 overflow-y-auto">
+        {/* Stored conversation history from DB */}
+        <ConversationHistory conversations={conversations} />
+
+        {/* Real-time activity feed for current session */}
         <ActivityFeed
           events={events}
           isGenerating={isGenerating}
