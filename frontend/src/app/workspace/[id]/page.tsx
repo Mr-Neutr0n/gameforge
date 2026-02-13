@@ -6,9 +6,11 @@ import AppLayout from "@/components/AppLayout";
 import GamePreview from "@/components/GamePreview";
 import ActivityFeed from "@/components/ActivityFeed";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import MessageInput from "@/components/MessageInput";
 import {
   getGame,
   streamGameGeneration,
+  streamGameIteration,
   type SSEEvent,
   type GameWithConversation,
 } from "@/lib/api";
@@ -111,6 +113,50 @@ export default function WorkspacePage() {
     };
   }, []);
 
+  // Iteration handler — sends a user message to modify the existing game
+  const handleIterate = useCallback(
+    (message: string) => {
+      if (isGenerating) return;
+
+      setIsGenerating(true);
+      setStartTime(Date.now());
+      setGenerateError(null);
+
+      // Add a user message event to the feed
+      setEvents((prev) => [
+        ...prev,
+        {
+          type: "thinking" as const,
+          agent: "iterator",
+          content: message,
+        },
+      ]);
+
+      const controller = streamGameIteration(gameId, message, {
+        onEvent: (event: SSEEvent) => {
+          setEvents((prev) => [...prev, event]);
+
+          if (event.type === "code" && event.content) {
+            setGameCode(event.content);
+          }
+          if (event.type === "complete" && event.game_code) {
+            setGameCode(event.game_code);
+          }
+        },
+        onError: (err) => {
+          setGenerateError(err.message);
+          setIsGenerating(false);
+        },
+        onComplete: () => {
+          setIsGenerating(false);
+        },
+      });
+
+      abortRef.current = controller;
+    },
+    [gameId, isGenerating],
+  );
+
   // Manual generate button handler
   const handleGenerate = () => {
     if (!game?.prompt) return;
@@ -127,6 +173,8 @@ export default function WorkspacePage() {
             isGenerating={isGenerating}
             startTime={startTime}
             generateError={generateError}
+            hasGameCode={!!gameCode}
+            onSendMessage={handleIterate}
           />
         }
       >
@@ -149,12 +197,16 @@ function WorkspaceSidebar({
   isGenerating,
   startTime,
   generateError,
+  hasGameCode,
+  onSendMessage,
 }: {
   gameId: string;
   events: SSEEvent[];
   isGenerating: boolean;
   startTime?: number;
   generateError: string | null;
+  hasGameCode: boolean;
+  onSendMessage: (message: string) => void;
 }) {
   return (
     <div className="flex h-full flex-col">
@@ -199,37 +251,12 @@ function WorkspaceSidebar({
         </div>
       )}
 
-      {/* Message input area - disabled until generation completes */}
-      <div className="border-t border-card-border p-3 sm:p-4">
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            placeholder={
-              isGenerating ? "Agent is working..." : "Send a message..."
-            }
-            className="flex-1 rounded-lg border border-card-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted focus:border-accent-cyan focus:outline-none focus:ring-1 focus:ring-accent-cyan/30 disabled:opacity-40 disabled:cursor-not-allowed"
-            disabled
-          />
-          <button
-            disabled
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-cyan/10 text-accent-cyan transition-colors hover:bg-accent-cyan/20 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" />
-            </svg>
-          </button>
-        </div>
-      </div>
+      {/* Message input */}
+      <MessageInput
+        isGenerating={isGenerating}
+        hasGameCode={hasGameCode}
+        onSend={onSendMessage}
+      />
     </div>
   );
 }
