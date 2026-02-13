@@ -105,7 +105,7 @@ def _check_daily_game_limit(db: Session, user_id: str) -> None:
 
 @router.get("", response_model=list[GameOut])
 @limiter.limit("30/minute")
-async def list_games(
+def list_games(
     request: Request,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -120,9 +120,22 @@ async def list_games(
     return games
 
 
+@router.get("/public", response_model=list[GameOut])
+def list_public_games(db: Session = Depends(get_db)):
+    """List all public games, newest first. No auth required."""
+    games = (
+        db.query(Game)
+        .filter(Game.is_public == True)
+        .order_by(Game.created_at.desc())
+        .limit(50)
+        .all()
+    )
+    return games
+
+
 @router.get("/{game_id}", response_model=GameDetailOut)
 @limiter.limit("30/minute")
-async def get_game(
+def get_game(
     request: Request,
     game_id: str,
     user: User = Depends(get_current_user),
@@ -144,7 +157,7 @@ async def get_game(
 
 @router.post("", response_model=GameOut, status_code=status.HTTP_201_CREATED)
 @limiter.limit("10/minute")
-async def create_game(
+def create_game(
     request: Request,
     body: GameCreateRequest,
     user: User = Depends(get_current_user),
@@ -163,17 +176,6 @@ async def create_game(
         prompt=body.prompt,
     )
     db.add(game)
-    db.flush()  # Ensure game.id is assigned before referencing it
-
-    # Store the initial user prompt as a conversation entry
-    conversation = Conversation(
-        game_id=game.id,
-        role="user",
-        content=body.prompt,
-        step_type="user",
-    )
-    db.add(conversation)
-
     db.commit()
     db.refresh(game)
     return game
@@ -181,7 +183,7 @@ async def create_game(
 
 @router.patch("/{game_id}", response_model=GameOut)
 @limiter.limit("30/minute")
-async def update_game(
+def update_game(
     request: Request,
     game_id: str,
     body: GameUpdateRequest,
@@ -208,7 +210,7 @@ async def update_game(
 
 @router.delete("/{game_id}", status_code=status.HTTP_204_NO_CONTENT)
 @limiter.limit("10/minute")
-async def delete_game(
+def delete_game(
     request: Request,
     game_id: str,
     user: User = Depends(get_current_user),
@@ -222,7 +224,7 @@ async def delete_game(
 
 @router.get("/{game_id}/conversations", response_model=list[ConversationOut])
 @limiter.limit("30/minute")
-async def get_conversations(
+def get_conversations(
     request: Request,
     game_id: str,
     user: User = Depends(get_current_user),
@@ -241,7 +243,7 @@ async def get_conversations(
 
 @router.get("/{game_id}/public", response_model=GamePublicOut)
 @limiter.limit("60/minute")
-async def get_public_game(
+def get_public_game(
     request: Request,
     game_id: str,
     db: Session = Depends(get_db),

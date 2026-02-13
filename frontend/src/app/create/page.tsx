@@ -204,7 +204,7 @@ function CreateContent() {
       <div className="flex flex-1 flex-col overflow-y-auto">
         {/* Header */}
         <div className="border-b border-card-border px-4 py-3 sm:px-6 sm:py-4">
-          <h1 className="text-base font-semibold text-foreground sm:text-lg">New Game</h1>
+          <h1 className="font-display text-base font-semibold text-foreground sm:text-lg">New Game</h1>
           <p className="mt-0.5 text-xs text-muted">
             Describe your game and let AI build it
           </p>

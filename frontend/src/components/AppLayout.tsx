@@ -86,7 +86,7 @@ export default function AppLayout({ sidebar, children }: AppLayoutProps) {
 
           {/* Logo */}
           <a href="/dashboard" className="flex items-center gap-1.5">
-            <span className="text-lg font-bold tracking-tight">
+            <span className="font-display text-lg font-bold tracking-tight">
               <span className="text-accent-cyan">Game</span>
               <span className="text-accent-purple">Forge</span>
             </span>

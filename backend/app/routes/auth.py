@@ -93,7 +93,7 @@ async def auth_github(
 
 @router.get("/me", response_model=UserResponse)
 @limiter.limit("30/minute")
-async def get_me(
+def get_me(
     request: Request,
     user: User = Depends(get_current_user),
 ):

@@ -130,7 +130,7 @@ def before_fixer(callback_context: CallbackContext) -> None:
     """Called before the fixer agent runs.
 
     If validation already passed, return a Content response to skip the fixer
-    and short-circuit the fix loop.
+    and set escalate to stop the LoopAgent.
     """
     result_raw = callback_context.state.get("validation_result", "")
     if isinstance(result_raw, str):
@@ -144,6 +144,8 @@ def before_fixer(callback_context: CallbackContext) -> None:
     if result.get("valid", False):
         _emit_progress(callback_context, "Code is valid — skipping fix pass.")
         logger.info("Coordinator: skipping fixer — validation already passed")
+        # Set escalate to stop the LoopAgent from continuing
+        callback_context.state["escalate"] = True
         # Return Content to skip this agent's execution
         return types.Content(
             role="model",
@@ -191,9 +193,31 @@ fix_loop_validator = LlmAgent(
 validator_agent.before_agent_callback = before_validator
 validator_agent.after_agent_callback = after_validator
 
+def after_fix_loop_validator(callback_context: CallbackContext) -> None:
+    """Called after the fix-loop validator finishes.
+
+    Sets escalate if the validation passed so the LoopAgent stops immediately
+    instead of running another fixer iteration.
+    """
+    after_validator(callback_context)
+
+    result_raw = callback_context.state.get("validation_result", "")
+    if isinstance(result_raw, str):
+        try:
+            result = json.loads(result_raw)
+        except (json.JSONDecodeError, TypeError):
+            result = {}
+    else:
+        result = result_raw if isinstance(result_raw, dict) else {}
+
+    if result.get("valid", False):
+        callback_context.state["escalate"] = True
+        logger.info("Coordinator: fix-loop validator passed — escalating to stop loop")
+
+
 # Attach callbacks to the fix-loop validator
 fix_loop_validator.before_agent_callback = before_validator
-fix_loop_validator.after_agent_callback = after_validator
+fix_loop_validator.after_agent_callback = after_fix_loop_validator
 
 # Attach callbacks to fixer
 fixer_agent.before_agent_callback = before_fixer

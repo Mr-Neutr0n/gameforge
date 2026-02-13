@@ -87,10 +87,18 @@ async def generate_game(
             status_code=status.HTTP_404_NOT_FOUND, detail="Game not found"
         )
 
+    # Concurrency guard: prevent overlapping generation runs
+    if game.status == "generating":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Game is already being generated",
+        )
+    game.status = "generating"
+
     # Update the game prompt if different
     if game.prompt != body.prompt:
         game.prompt = body.prompt
-        db.commit()
+    db.commit()
 
     async def event_stream():
         """Async generator that runs the ADK pipeline and yields SSE events."""
@@ -240,6 +248,13 @@ async def generate_game(
                     "No game code captured from state deltas for game %s",
                     game_id,
                 )
+                try:
+                    game_record = db.query(Game).filter(Game.id == game_id).first()
+                    if game_record:
+                        game_record.status = "failed"
+                        db.commit()
+                except Exception:
+                    logger.warning("Failed to update game status to 'failed' for %s", game_id)
                 yield _sse_event({
                     "type": "error",
                     "message": "Game generation completed but no code was produced.",
@@ -250,6 +265,7 @@ async def generate_game(
             game_record = db.query(Game).filter(Game.id == game_id).first()
             if game_record:
                 game_record.game_code = final_game_code
+                game_record.status = "completed"
                 game_record.updated_at = datetime.now(timezone.utc)
 
                 # Auto-set title from planner output if not already set
@@ -287,9 +303,17 @@ async def generate_game(
 
         except Exception as e:
             logger.exception("Error during game generation for game %s", game_id)
+            # Mark game as failed
+            try:
+                game_record = db.query(Game).filter(Game.id == game_id).first()
+                if game_record:
+                    game_record.status = "failed"
+                    db.commit()
+            except Exception:
+                logger.warning("Failed to update game status to 'failed' for %s", game_id)
             yield _sse_event({
                 "type": "error",
-                "message": str(e),
+                "message": "An error occurred during game generation. Please try again.",
             })
 
     return StreamingResponse(
@@ -372,12 +396,22 @@ async def iterate_game(
             status_code=status.HTTP_404_NOT_FOUND, detail="Game not found"
         )
 
+    # Concurrency guard: prevent overlapping generation runs
+    if game.status == "generating":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Game is already being generated",
+        )
+
     # Game must have existing code to iterate on
     if not game.game_code:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Game has no code to iterate on. Generate a game first.",
         )
+
+    game.status = "generating"
+    db.commit()
 
     # Load last 10 conversation entries for context
     recent_conversations = (
@@ -468,6 +502,13 @@ async def iterate_game(
                     "No updated code captured from iterator for game %s",
                     game_id,
                 )
+                try:
+                    game_record = db.query(Game).filter(Game.id == game_id).first()
+                    if game_record:
+                        game_record.status = "failed"
+                        db.commit()
+                except Exception:
+                    logger.warning("Failed to update game status to 'failed' for %s", game_id)
                 yield _sse_event({
                     "type": "error",
                     "message": "Iteration completed but no updated code was produced.",
@@ -478,6 +519,7 @@ async def iterate_game(
             game_record = db.query(Game).filter(Game.id == game_id).first()
             if game_record:
                 game_record.game_code = final_game_code
+                game_record.status = "completed"
                 game_record.updated_at = datetime.now(timezone.utc)
                 db.commit()
 
@@ -516,9 +558,17 @@ async def iterate_game(
 
         except Exception as e:
             logger.exception("Error during game iteration for game %s", game_id)
+            # Mark game as failed
+            try:
+                game_record = db.query(Game).filter(Game.id == game_id).first()
+                if game_record:
+                    game_record.status = "failed"
+                    db.commit()
+            except Exception:
+                logger.warning("Failed to update game status to 'failed' for %s", game_id)
             yield _sse_event({
                 "type": "error",
-                "message": str(e),
+                "message": "An error occurred during game iteration. Please try again.",
             })
 
     return StreamingResponse(

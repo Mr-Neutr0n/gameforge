@@ -5,6 +5,7 @@ Provides:
 - run_game_iteration() — runs the iterator agent to modify existing games
 """
 
+import logging
 import uuid
 from collections.abc import AsyncGenerator
 from typing import Any
@@ -14,6 +15,8 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 
 from app.agents.config import APP_NAME, MAX_LLM_CALLS
+
+logger = logging.getLogger(__name__)
 
 # Lazy imports to avoid circular dependency — agents are built at module
 # level, which imports tools/config that this module also uses.
@@ -119,6 +122,14 @@ async def run_game_generation(
     ):
         yield event
 
+    # Clean up the ADK session to free memory
+    try:
+        await session_service.delete_session(
+            app_name=APP_NAME, user_id=user_id, session_id=session_id
+        )
+    except Exception:
+        logger.warning("Failed to delete ADK session %s", session_id, exc_info=True)
+
 
 async def run_game_iteration(
     message: str,
@@ -185,3 +196,11 @@ async def run_game_iteration(
         run_config=run_config,
     ):
         yield event
+
+    # Clean up the ADK session to free memory
+    try:
+        await session_service.delete_session(
+            app_name=f"{APP_NAME}-iterator", user_id=user_id, session_id=session_id
+        )
+    except Exception:
+        logger.warning("Failed to delete ADK session %s", session_id, exc_info=True)

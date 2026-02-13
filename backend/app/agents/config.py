@@ -4,6 +4,9 @@ import os
 
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
+if not GOOGLE_API_KEY:
+    import warnings
+    warnings.warn("GOOGLE_API_KEY not set — game generation will fail")
 
 # Agent app identifier used by ADK Runner
 APP_NAME = "gameforge"

@@ -43,7 +43,7 @@ function GameCard({
   color: string;
 }) {
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-card-border bg-card p-4 transition-all hover:border-white/10 hover:bg-white/[0.03] sm:rounded-2xl sm:p-6">
+    <div className="game-card-hover group relative overflow-hidden rounded-xl border border-card-border bg-card p-4 transition-all hover:border-white/10 hover:bg-white/[0.03] sm:rounded-2xl sm:p-6">
       {/* Faux game preview */}
       <div
         className="mb-3 flex h-28 items-center justify-center rounded-lg sm:mb-4 sm:h-40 sm:rounded-xl"
@@ -143,7 +143,7 @@ export default function Home() {
     <main className="flex min-h-screen flex-col">
       {/* Nav */}
       <nav className="flex items-center justify-between px-4 py-4 sm:px-6 md:px-12">
-        <div className="text-lg font-bold tracking-tight sm:text-xl">
+        <div className="font-display text-lg font-bold tracking-tight sm:text-xl">
           <span className="text-accent-cyan">Game</span>
           <span className="text-accent-purple">Forge</span>
         </div>
@@ -161,7 +161,7 @@ export default function Home() {
           <div className="rounded-full border border-card-border bg-card px-3 py-1 text-[11px] font-medium text-muted sm:px-4 sm:py-1.5 sm:text-xs">
             Powered by Gemini + Phaser.js
           </div>
-          <h1 className="max-w-2xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl md:text-6xl">
+          <h1 className="font-display max-w-2xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl md:text-6xl">
             Describe a game,{" "}
             <span className="bg-gradient-to-r from-accent-cyan to-accent-purple bg-clip-text text-transparent">
               play it in seconds
@@ -195,7 +195,7 @@ export default function Home() {
       {/* Example games */}
       <section className="border-t border-card-border px-4 py-10 sm:px-6 sm:py-16 md:px-12">
         <div className="mx-auto max-w-5xl">
-          <h2 className="mb-2 text-center text-xs font-medium uppercase tracking-widest text-muted sm:text-sm">
+          <h2 className="font-display mb-2 text-center text-xs font-medium uppercase tracking-widest text-muted sm:text-sm">
             What you can build
           </h2>
           <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-4">
@@ -209,7 +209,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-card-border px-4 py-5 sm:px-6 sm:py-6 md:px-12">
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 sm:flex-row sm:justify-between">
-          <div className="text-xs text-muted">
+          <div className="font-display text-xs text-muted">
             <span className="text-accent-cyan">Game</span>
             <span className="text-accent-purple">Forge</span>
             <span className="ml-2">by harikp.com</span>

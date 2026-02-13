@@ -71,7 +71,7 @@ function GameCard({
   }, [menuOpen]);
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-card-border bg-card text-left transition-all hover:border-white/10 hover:bg-white/[0.03]">
+    <div className="game-card-hover group relative flex flex-col overflow-hidden rounded-2xl border border-card-border bg-card text-left transition-all hover:border-white/10 hover:bg-white/[0.03]">
       {/* Menu button */}
       <div ref={menuRef} className="absolute right-2 top-2 z-10">
         <button
@@ -396,10 +396,23 @@ function DashboardContent() {
   if (loading) {
     return (
       <AppLayout sidebar={<DashboardSidebar gameCount={0} />}>
-        <div className="flex flex-1 items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent-cyan border-t-transparent" />
-            <p className="text-sm text-muted">Loading games...</p>
+        <div className="flex flex-1 flex-col overflow-y-auto">
+          <div className="flex items-center justify-between border-b border-card-border px-4 py-3 sm:px-6 sm:py-4">
+            <div>
+              <div className="h-5 w-24 rounded bg-white/[0.06] animate-pulse" />
+              <div className="mt-1 h-3 w-16 rounded bg-white/[0.04] animate-pulse" />
+            </div>
+          </div>
+          <div className="p-4 sm:p-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="rounded-2xl border border-card-border bg-card p-4 animate-pulse">
+                  <div className="h-32 rounded-xl bg-white/[0.04] mb-3" />
+                  <div className="h-4 rounded bg-white/[0.06] w-3/4 mb-2" />
+                  <div className="h-3 rounded bg-white/[0.04] w-1/2" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </AppLayout>
@@ -455,7 +468,7 @@ function DashboardContent() {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-card-border px-4 py-3 sm:px-6 sm:py-4">
           <div>
-            <h1 className="text-base font-semibold text-foreground sm:text-lg">My Games</h1>
+            <h1 className="font-display text-base font-semibold text-foreground sm:text-lg">My Games</h1>
             <p className="text-xs text-muted">
               {games.length} {games.length === 1 ? "game" : "games"}
             </p>

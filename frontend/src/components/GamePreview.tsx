@@ -188,9 +188,10 @@ export default function GamePreview({
       {/* Toolbar */}
       <div className="flex h-11 shrink-0 items-center justify-between border-b border-card-border px-3 sm:h-12 sm:px-4">
         <div className="flex items-center gap-2 sm:gap-3">
-          <h3 className="text-sm font-medium text-foreground">Preview</h3>
-          <span className="hidden rounded-md bg-card px-2 py-0.5 text-xs text-muted border border-card-border sm:inline-flex">
-            Game
+          <h3 className="font-mono text-sm font-medium text-foreground tracking-wide">GAME</h3>
+          <span className="hidden items-center gap-1.5 rounded-md bg-card px-2 py-0.5 text-xs text-muted border border-card-border sm:inline-flex">
+            <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+            Running
           </span>
           {hasErrors && (
             <button
@@ -282,27 +283,35 @@ export default function GamePreview({
         </div>
       </div>
 
-      {/* Game iframe area */}
-      <div className="relative flex-1 bg-[#0a0a0a]">
-        {/* Loading overlay */}
-        {loading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0a0a0a]">
-            <div className="flex flex-col items-center gap-3">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-cyan/20 border-t-accent-cyan" />
-              <p className="text-xs text-muted">Loading game...</p>
+      {/* Game iframe area with bezel frame */}
+      <div className="relative flex-1 bg-[#0a0a0a] p-2 sm:p-3">
+        <div
+          className="relative h-full w-full overflow-hidden rounded-xl border border-white/[0.08]"
+          style={{ boxShadow: "0 0 40px rgba(6, 182, 212, 0.08)" }}
+        >
+          {/* Loading overlay */}
+          {loading && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0a0a0a]">
+              <div className="flex flex-col items-center gap-3">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-cyan/20 border-t-accent-cyan" />
+                <p className="text-xs text-muted">Loading game...</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Sandboxed iframe */}
-        <iframe
-          key={iframeKey}
-          ref={iframeRef}
-          src={buildSrc(gameCode)}
-          sandbox="allow-scripts"
-          className="h-full w-full border-0"
-          title="Game Preview"
-        />
+          {/* Sandboxed iframe */}
+          <iframe
+            key={iframeKey}
+            ref={iframeRef}
+            src={buildSrc(gameCode)}
+            sandbox="allow-scripts"
+            className="h-full w-full border-0"
+            title="Game Preview"
+          />
+
+          {/* Scanline overlay */}
+          <div className="crt-scanlines absolute inset-0 z-[5]" />
+        </div>
       </div>
 
       {/* Collapsible error panel below the game preview */}

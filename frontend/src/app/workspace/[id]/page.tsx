@@ -663,22 +663,26 @@ function GamePreviewEmpty({
     <div className="flex h-full flex-col">
       <div className="flex h-11 shrink-0 items-center border-b border-card-border px-3 sm:h-12 sm:px-4">
         <div className="flex items-center gap-2 sm:gap-3">
-          <h3 className="text-sm font-medium text-foreground">Preview</h3>
-          <span className="hidden rounded-md bg-card px-2 py-0.5 text-xs text-muted border border-card-border sm:inline-flex">
-            Game
+          <h3 className="font-mono text-sm font-medium text-foreground tracking-wide">GAME</h3>
+          <span className="hidden items-center gap-1.5 rounded-md bg-card px-2 py-0.5 text-xs text-muted border border-card-border sm:inline-flex">
+            <span className="h-1.5 w-1.5 rounded-full bg-muted" />
+            Idle
           </span>
         </div>
       </div>
-      <div className="flex flex-1 items-center justify-center bg-[#0a0a0a] p-3 sm:p-4">
-        <div className="flex flex-col items-center gap-4 text-center">
+      <div className="relative flex flex-1 items-center justify-center bg-[#0a0a0a] p-3 sm:p-4">
+        {/* CRT scanline overlay */}
+        <div className="crt-scanlines absolute inset-0 z-[1]" />
+
+        <div className="relative z-[2] flex flex-col items-center gap-5 text-center">
           {isGenerating ? (
             <>
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-card border border-card-border">
                 <div className="h-7 w-7 animate-spin rounded-full border-2 border-accent-cyan border-t-transparent" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">
-                  Generating your game...
+                <p className="font-mono text-sm font-medium text-foreground tracking-wide">
+                  LOADING...
                 </p>
                 <p className="mt-1 text-xs text-muted">
                   Watch the activity feed for progress
@@ -687,34 +691,21 @@ function GamePreviewEmpty({
             </>
           ) : (
             <>
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-card border border-card-border">
-                <svg
-                  width="28"
-                  height="28"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  className="text-accent-purple"
-                >
-                  <polygon
-                    points="5 3 19 12 5 21 5 3"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  No game loaded
+              <div className="flex flex-col items-center gap-3">
+                <p className="font-mono text-2xl font-bold text-accent-cyan tracking-widest sm:text-3xl">
+                  PRESS START
                 </p>
-                <p className="mt-1 text-xs text-muted">
-                  Generate a game to see it here
+                <p className="font-mono text-sm text-muted">
+                  <span className="animate-blink inline-block">_</span>
                 </p>
               </div>
+              <p className="font-mono text-xs text-muted/60">
+                INSERT COIN TO CONTINUE
+              </p>
               {onGenerate && (
                 <button
                   onClick={onGenerate}
-                  className="mt-2 flex items-center gap-2 rounded-xl bg-accent-cyan px-4 py-2 text-sm font-medium text-background transition-all hover:opacity-90"
+                  className="mt-2 flex items-center gap-2 rounded-xl bg-forge-ember px-5 py-2.5 text-sm font-medium text-white transition-all hover:opacity-90"
                 >
                   <svg
                     width="14"

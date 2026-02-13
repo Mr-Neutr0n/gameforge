@@ -60,7 +60,7 @@ def _get_user_game(db: Session, game_id: str, user_id: str) -> Game:
 
 @router.post("/{game_id}/audit/logic", response_model=AuditResponse)
 @limiter.limit("20/minute")
-async def audit_logic(
+def audit_logic(
     request: Request,
     game_id: str,
     user: User = Depends(get_current_user),
@@ -104,7 +104,7 @@ async def audit_logic(
 
 @router.post("/{game_id}/audit/ui", response_model=AuditResponse)
 @limiter.limit("20/minute")
-async def audit_ui(
+def audit_ui(
     request: Request,
     game_id: str,
     user: User = Depends(get_current_user),
@@ -146,7 +146,7 @@ async def audit_ui(
 
 @router.post("/{game_id}/audit/code", response_model=AuditResponse)
 @limiter.limit("20/minute")
-async def audit_code(
+def audit_code(
     request: Request,
     game_id: str,
     user: User = Depends(get_current_user),
@@ -204,7 +204,7 @@ class AuditAllResponse(BaseModel):
 
 @router.post("/{game_id}/audit/all", response_model=AuditAllResponse)
 @limiter.limit("10/minute")
-async def audit_all(
+def audit_all(
     request: Request,
     game_id: str,
     user: User = Depends(get_current_user),
@@ -240,7 +240,7 @@ async def audit_all(
 
 @router.get("/{game_id}/audits", response_model=list[AuditResultOut])
 @limiter.limit("30/minute")
-async def get_audit_results(
+def get_audit_results(
     request: Request,
     game_id: str,
     user: User = Depends(get_current_user),
@@ -270,7 +270,7 @@ async def get_audit_results(
 
 @router.get("/{game_id}/audits/public")
 @limiter.limit("60/minute")
-async def get_public_audit_summary(
+def get_public_audit_summary(
     request: Request,
     game_id: str,
     db: Session = Depends(get_db),

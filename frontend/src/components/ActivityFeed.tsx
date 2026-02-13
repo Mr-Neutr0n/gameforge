@@ -286,11 +286,32 @@ function ValidationDetails({
   );
 }
 
+function getBorderColor(type: SSEEvent["type"], valid?: boolean): string {
+  switch (type) {
+    case "thinking":
+    case "progress":
+      return "border-l-blue-500";
+    case "code":
+      return "border-l-emerald-500";
+    case "validation":
+      return valid ? "border-l-green-500" : "border-l-red-500";
+    case "fix":
+      return "border-l-orange-500";
+    case "complete":
+      return "border-l-cyan-500";
+    case "error":
+      return "border-l-red-500";
+    default:
+      return "border-l-white/20";
+  }
+}
+
 function TimelineItem({ item }: { item: ActivityItem }) {
   const style = getEventStyle(item.type, item.valid);
+  const borderColor = getBorderColor(item.type, item.valid);
 
   return (
-    <div className="relative flex gap-3 pb-4 last:pb-0">
+    <div className={`relative flex gap-3 pb-4 last:pb-0 border-l-2 ${borderColor} pl-1`}>
       {/* Timeline line */}
       <div className="flex flex-col items-center">
         <div

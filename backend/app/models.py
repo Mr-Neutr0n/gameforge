@@ -78,7 +78,7 @@ class Game(Base):
         String(36), primary_key=True, default=_new_uuid
     )
     user_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     title: Mapped[str | None] = mapped_column(String(255), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -86,6 +86,7 @@ class Game(Base):
     game_code: Mapped[str | None] = mapped_column(Text, nullable=True)
     thumbnail_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
     is_public: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default="idle")  # idle, generating, completed, failed
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow, nullable=False
     )
@@ -112,7 +113,7 @@ class Conversation(Base):
         String(36), primary_key=True, default=_new_uuid
     )
     game_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("games.id", ondelete="CASCADE"), nullable=False
+        String(36), ForeignKey("games.id", ondelete="CASCADE"), nullable=False, index=True
     )
     role: Mapped[ConversationRole] = mapped_column(
         Enum(ConversationRole, name="conversation_role", create_constraint=True),
@@ -140,7 +141,7 @@ class AuditResult(Base):
         String(36), primary_key=True, default=_new_uuid
     )
     game_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("games.id", ondelete="CASCADE"), nullable=False
+        String(36), ForeignKey("games.id", ondelete="CASCADE"), nullable=False, index=True
     )
     audit_type: Mapped[AuditType] = mapped_column(
         Enum(AuditType, name="audit_type", create_constraint=True),

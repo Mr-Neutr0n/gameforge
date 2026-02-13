@@ -3,14 +3,21 @@
 @theme {
   --color-background: #0c0c0c;
   --color-foreground: #fafafa;
-  --color-card: #141414;
-  --color-card-border: rgba(255, 255, 255, 0.06);
+  --color-card: #1a1a1a;
+  --color-card-border: rgba(255, 255, 255, 0.10);
   --color-muted: #737373;
   --color-accent-cyan: #22d3ee;
   --color-accent-purple: #a855f7;
   --color-accent-blue: #3b82f6;
-  --font-sans: "Inter", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --color-surface-0: #09090b;
+  --color-surface-1: #141414;
+  --color-surface-2: #1a1a1a;
+  --color-surface-3: #222222;
+  --color-forge-ember: #f97316;
+  --color-forge-gold: #eab308;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 }
 
 body {
@@ -76,4 +83,34 @@ body {
 
 .slide-in-from-right-5 {
   /* class marker for Tailwind — actual animation defined above */
+}
+
+/* Game card hover lift */
+.game-card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.game-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* CRT blink animation for empty game preview */
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.animate-blink {
+  animation: blink-cursor 1s step-end infinite;
+}
+
+/* CRT scanline overlay */
+.crt-scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  pointer-events: none;
 }
