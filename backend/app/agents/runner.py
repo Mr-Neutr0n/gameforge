@@ -91,7 +91,7 @@ async def run_game_generation(
         "progress_messages": [],
     }
 
-    await session_service.create_session(
+    session_service.create_session(
         app_name=APP_NAME,
         user_id=user_id,
         session_id=session_id,
@@ -158,7 +158,7 @@ async def run_game_iteration(
     if conversation_context:
         initial_state["conversation_context"] = conversation_context
 
-    await session_service.create_session(
+    session_service.create_session(
         app_name=f"{APP_NAME}-iterator",
         user_id=user_id,
         session_id=session_id,
