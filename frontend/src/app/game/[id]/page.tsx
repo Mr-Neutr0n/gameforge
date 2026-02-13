@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import GameShareClient from "./GameShareClient";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://games.harikp.com";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -27,28 +28,36 @@ export async function generateMetadata({
 
   if (!game) {
     return {
-      title: "Game Not Found — GameForge",
+      title: "Game Not Found",
       description: "This game does not exist or is not publicly shared.",
+      robots: { index: false, follow: false },
     };
   }
 
   const title = game.title || "Untitled Game";
   const description =
-    game.description || `A game created with GameForge by ${game.creator_name || "a creator"}`;
+    game.description ||
+    game.prompt ||
+    `A game created with GameForge by ${game.creator_name || "a creator"}`;
+  const gameUrl = `${SITE_URL}/game/${id}`;
 
   return {
-    title: `${title} — GameForge`,
+    title,
     description,
     openGraph: {
       title: `${title} — GameForge`,
       description,
       type: "website",
+      url: gameUrl,
       siteName: "GameForge",
     },
     twitter: {
       card: "summary_large_image",
       title: `${title} — GameForge`,
       description,
+    },
+    alternates: {
+      canonical: gameUrl,
     },
   };
 }

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /game/*
+Disallow: /dashboard
+Disallow: /create
+Disallow: /workspace/*
+Disallow: /api/
+
+Sitemap: https://games.harikp.com/sitemap.xml
