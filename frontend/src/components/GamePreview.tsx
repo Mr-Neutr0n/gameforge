@@ -5,9 +5,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 interface GamePreviewProps {
   gameCode: string;
   onError?: (errors: string[]) => void;
+  onLog?: (logs: LogEntry[]) => void;
 }
 
-interface LogEntry {
+export interface LogEntry {
   type: "log" | "warn" | "error";
   message: string;
   timestamp: number;
@@ -55,14 +56,20 @@ __GAME_CODE__
 </body>
 </html>`;
 
-export default function GamePreview({ gameCode, onError }: GamePreviewProps) {
+export default function GamePreview({
+  gameCode,
+  onError,
+  onLog,
+}: GamePreviewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState<string[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [logsOpen, setLogsOpen] = useState(false);
+  const [errorsOpen, setErrorsOpen] = useState(false);
+  const [consoleOpen, setConsoleOpen] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
   const errorsRef = useRef<string[]>([]);
+  const logsRef = useRef<LogEntry[]>([]);
 
   // Build the full HTML for the iframe
   const buildSrc = useCallback((code: string): string => {
@@ -84,17 +91,33 @@ export default function GamePreview({ gameCode, onError }: GamePreviewProps) {
           break;
 
         case "log":
-          setLogs((prev) => [
-            ...prev.slice(-199),
-            { type: "log", message: msg.data?.message || "", timestamp: now },
-          ]);
+          setLogs((prev) => {
+            const next = [
+              ...prev.slice(-199),
+              {
+                type: "log" as const,
+                message: msg.data?.message || "",
+                timestamp: now,
+              },
+            ];
+            logsRef.current = next;
+            return next;
+          });
           break;
 
         case "warn":
-          setLogs((prev) => [
-            ...prev.slice(-199),
-            { type: "warn", message: msg.data?.message || "", timestamp: now },
-          ]);
+          setLogs((prev) => {
+            const next = [
+              ...prev.slice(-199),
+              {
+                type: "warn" as const,
+                message: msg.data?.message || "",
+                timestamp: now,
+              },
+            ];
+            logsRef.current = next;
+            return next;
+          });
           break;
 
         case "error": {
@@ -104,10 +127,16 @@ export default function GamePreview({ gameCode, onError }: GamePreviewProps) {
             errorsRef.current = next;
             return next;
           });
-          setLogs((prev) => [
-            ...prev.slice(-199),
-            { type: "error", message: errorMsg, timestamp: now },
-          ]);
+          setLogs((prev) => {
+            const next = [
+              ...prev.slice(-199),
+              { type: "error" as const, message: errorMsg, timestamp: now },
+            ];
+            logsRef.current = next;
+            return next;
+          });
+          // Auto-expand error panel when errors arrive
+          setErrorsOpen(true);
           break;
         }
       }
@@ -124,12 +153,21 @@ export default function GamePreview({ gameCode, onError }: GamePreviewProps) {
     }
   }, [errors, onError]);
 
+  // Propagate logs to parent callback
+  useEffect(() => {
+    if (logs.length > 0) {
+      onLog?.(logs);
+    }
+  }, [logs, onLog]);
+
   // Restart: bump iframe key to force remount
   const handleRestart = useCallback(() => {
     setLoading(true);
     setErrors([]);
     setLogs([]);
     errorsRef.current = [];
+    logsRef.current = [];
+    setErrorsOpen(false);
     setIframeKey((k) => k + 1);
   }, []);
 
@@ -139,7 +177,6 @@ export default function GamePreview({ gameCode, onError }: GamePreviewProps) {
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     window.open(url, "_blank");
-    // Revoke after a short delay to allow the tab to load
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }, [gameCode]);
 
@@ -156,14 +193,24 @@ export default function GamePreview({ gameCode, onError }: GamePreviewProps) {
             Game
           </span>
           {hasErrors && (
-            <span className="flex items-center gap-1 rounded-md bg-red-500/10 px-2 py-0.5 text-xs text-red-400 border border-red-500/20">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <button
+              onClick={() => setErrorsOpen((v) => !v)}
+              className="flex items-center gap-1 rounded-md bg-red-500/10 px-2 py-0.5 text-xs text-red-400 border border-red-500/20 transition-colors hover:bg-red-500/20"
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <circle cx="12" cy="12" r="10" />
                 <line x1="15" y1="9" x2="9" y2="15" />
                 <line x1="9" y1="9" x2="15" y2="15" />
               </svg>
               {errorCount} error{errorCount !== 1 ? "s" : ""}
-            </span>
+            </button>
           )}
         </div>
         <div className="flex items-center gap-1">
@@ -173,22 +220,40 @@ export default function GamePreview({ gameCode, onError }: GamePreviewProps) {
             className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-card hover:text-foreground"
             title="Restart game"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <polyline points="1 4 1 10 7 10" />
               <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
             </svg>
           </button>
-          {/* Toggle logs */}
+          {/* Toggle console */}
           <button
-            onClick={() => setLogsOpen((v) => !v)}
+            onClick={() => setConsoleOpen((v) => !v)}
             className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
-              logsOpen
+              consoleOpen
                 ? "bg-accent-cyan/10 text-accent-cyan"
                 : "text-muted hover:bg-card hover:text-foreground"
             }`}
             title="Toggle console logs"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <polyline points="4 17 10 11 4 5" />
               <line x1="12" y1="19" x2="20" y2="19" />
             </svg>
@@ -199,7 +264,16 @@ export default function GamePreview({ gameCode, onError }: GamePreviewProps) {
             className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-card hover:text-foreground"
             title="Open in new tab"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
               <polyline points="15 3 21 3 21 9" />
               <line x1="10" y1="14" x2="21" y2="3" />
@@ -220,55 +294,6 @@ export default function GamePreview({ gameCode, onError }: GamePreviewProps) {
           </div>
         )}
 
-        {/* Error overlay */}
-        {hasErrors && !logsOpen && (
-          <div className="absolute bottom-3 left-3 right-3 z-20 rounded-xl border border-red-500/20 bg-[#1a0a0a]/95 p-3 backdrop-blur-sm">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-start gap-2 min-w-0">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="mt-0.5 shrink-0 text-red-400"
-                >
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                  <line x1="12" y1="9" x2="12" y2="13" />
-                  <line x1="12" y1="17" x2="12.01" y2="17" />
-                </svg>
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-red-400">
-                    Runtime Error
-                  </p>
-                  <p className="mt-1 truncate font-mono text-xs text-red-300/80">
-                    {errors[errors.length - 1]}
-                  </p>
-                  {errorCount > 1 && (
-                    <button
-                      onClick={() => setLogsOpen(true)}
-                      className="mt-1 text-xs text-red-400/60 hover:text-red-400 transition-colors"
-                    >
-                      +{errorCount - 1} more error{errorCount - 1 !== 1 ? "s" : ""}
-                    </button>
-                  )}
-                </div>
-              </div>
-              <button
-                onClick={() => setErrors([])}
-                className="shrink-0 text-red-400/40 hover:text-red-400 transition-colors"
-                title="Dismiss"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Sandboxed iframe */}
         <iframe
           key={iframeKey}
@@ -280,8 +305,85 @@ export default function GamePreview({ gameCode, onError }: GamePreviewProps) {
         />
       </div>
 
+      {/* Collapsible error panel below the game preview */}
+      {hasErrors && (
+        <div className="shrink-0 border-t border-red-500/20 bg-[#1a0a0a]">
+          {/* Error panel header — always visible when errors exist */}
+          <button
+            onClick={() => setErrorsOpen((v) => !v)}
+            className="flex w-full items-center justify-between px-3 py-2 transition-colors hover:bg-red-500/5"
+          >
+            <div className="flex items-center gap-2">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="shrink-0 text-red-400"
+              >
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              <span className="text-xs font-medium text-red-400">
+                {errorCount} Runtime Error{errorCount !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setErrors([]);
+                  errorsRef.current = [];
+                  setErrorsOpen(false);
+                }}
+                className="font-mono text-xs text-red-400/50 hover:text-red-400 transition-colors"
+              >
+                Clear
+              </button>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`text-red-400/50 transition-transform ${errorsOpen ? "rotate-180" : ""}`}
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+          </button>
+
+          {/* Expanded error list */}
+          {errorsOpen && (
+            <div className="max-h-40 overflow-y-auto border-t border-red-500/10 px-3 pb-2">
+              {errors.map((error, i) => (
+                <div
+                  key={i}
+                  className="border-b border-red-500/5 py-1.5 last:border-b-0"
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="mt-0.5 shrink-0 font-mono text-xs text-red-500/50">
+                      {i + 1}.
+                    </span>
+                    <pre className="whitespace-pre-wrap break-all font-mono text-xs leading-relaxed text-red-300/80">
+                      {error}
+                    </pre>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Collapsible console log panel */}
-      {logsOpen && (
+      {consoleOpen && (
         <div className="flex max-h-48 flex-col border-t border-card-border bg-[#0e0e0e]">
           <div className="flex shrink-0 items-center justify-between px-3 py-1.5">
             <span className="font-mono text-xs text-muted">Console</span>
@@ -289,19 +391,25 @@ export default function GamePreview({ gameCode, onError }: GamePreviewProps) {
               <button
                 onClick={() => {
                   setLogs([]);
-                  setErrors([]);
-                  errorsRef.current = [];
+                  logsRef.current = [];
                 }}
                 className="font-mono text-xs text-muted hover:text-foreground transition-colors"
               >
                 Clear
               </button>
               <button
-                onClick={() => setLogsOpen(false)}
+                onClick={() => setConsoleOpen(false)}
                 className="text-muted hover:text-foreground transition-colors"
                 title="Close console"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
