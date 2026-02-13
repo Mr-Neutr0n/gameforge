@@ -8,6 +8,7 @@ import ActivityFeed from "@/components/ActivityFeed";
 import ConversationHistory from "@/components/ConversationHistory";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import MessageInput from "@/components/MessageInput";
+import GameMetadataEditor from "@/components/GameMetadataEditor";
 import {
   getGame,
   updateGame,
@@ -34,6 +35,9 @@ export default function WorkspacePage() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [gameTitle, setGameTitle] = useState<string | null>(null);
+  const [gameDescription, setGameDescription] = useState<string | null>(null);
+  const [isPublic, setIsPublic] = useState(false);
+  const [showMetadataPanel, setShowMetadataPanel] = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
   const hasStartedGeneration = useRef(false);
@@ -48,6 +52,8 @@ export default function WorkspacePage() {
         if (cancelled) return;
         setGame(g);
         setGameTitle(g.title || null);
+        setGameDescription(g.description || null);
+        setIsPublic(g.is_public);
         if (g.game_code) {
           setGameCode(g.game_code);
           savedCodeRef.current = g.game_code;
@@ -221,6 +227,21 @@ export default function WorkspacePage() {
     }
   }, [gameId, gameCode, isSaving]);
 
+  // Metadata update handler — persists title, description, visibility
+  const handleMetadataUpdate = useCallback(
+    async (updates: { title?: string; description?: string; is_public?: boolean }) => {
+      try {
+        const updated = await updateGame(gameId, updates);
+        if (updates.title !== undefined) setGameTitle(updated.title);
+        if (updates.description !== undefined) setGameDescription(updated.description);
+        if (updates.is_public !== undefined) setIsPublic(updated.is_public);
+      } catch {
+        // Update failed silently — user can retry
+      }
+    },
+    [gameId],
+  );
+
   // Ctrl+S / Cmd+S keyboard shortcut for save
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -261,10 +282,27 @@ export default function WorkspacePage() {
         {gameCode && (
           <WorkspaceToolbar
             title={gameTitle}
+            isPublic={isPublic}
             isSaving={isSaving}
             hasUnsavedChanges={hasUnsavedChanges}
             lastSavedAt={lastSavedAt}
+            showMetadataPanel={showMetadataPanel}
             onSave={handleSave}
+            onTitleChange={(title) => handleMetadataUpdate({ title })}
+            onToggleMetadataPanel={() => setShowMetadataPanel((v) => !v)}
+          />
+        )}
+        {/* Metadata editor panel */}
+        {gameCode && showMetadataPanel && (
+          <GameMetadataEditor
+            description={gameDescription}
+            isPublic={isPublic}
+            onDescriptionChange={(description) =>
+              handleMetadataUpdate({ description })
+            }
+            onVisibilityChange={(is_public) =>
+              handleMetadataUpdate({ is_public })
+            }
           />
         )}
         {gameCode ? (
@@ -358,17 +396,64 @@ function WorkspaceSidebar({
 
 function WorkspaceToolbar({
   title,
+  isPublic,
   isSaving,
   hasUnsavedChanges,
   lastSavedAt,
+  showMetadataPanel,
   onSave,
+  onTitleChange,
+  onToggleMetadataPanel,
 }: {
   title: string | null;
+  isPublic: boolean;
   isSaving: boolean;
   hasUnsavedChanges: boolean;
   lastSavedAt: number | null;
+  showMetadataPanel: boolean;
   onSave: () => void;
+  onTitleChange: (title: string) => void;
+  onToggleMetadataPanel: () => void;
 }) {
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editTitle, setEditTitle] = useState(title || "");
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync editTitle when title prop changes (e.g., after generation)
+  useEffect(() => {
+    if (!isEditingTitle) {
+      setEditTitle(title || "");
+    }
+  }, [title, isEditingTitle]);
+
+  // Focus input when entering edit mode
+  useEffect(() => {
+    if (isEditingTitle && titleInputRef.current) {
+      titleInputRef.current.focus();
+      titleInputRef.current.select();
+    }
+  }, [isEditingTitle]);
+
+  const handleTitleSubmit = () => {
+    const trimmed = editTitle.trim();
+    if (trimmed && trimmed !== title) {
+      onTitleChange(trimmed);
+    } else {
+      setEditTitle(title || "");
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleTitleSubmit();
+    } else if (e.key === "Escape") {
+      setEditTitle(title || "");
+      setIsEditingTitle(false);
+    }
+  };
+
   const formatSavedTime = (ts: number) => {
     const diff = Math.floor((Date.now() - ts) / 1000);
     if (diff < 5) return "just now";
@@ -382,7 +467,7 @@ function WorkspaceToolbar({
 
   return (
     <div className="flex h-10 shrink-0 items-center justify-between border-b border-card-border bg-background px-3 sm:px-4">
-      {/* Title */}
+      {/* Title — click to edit */}
       <div className="flex items-center gap-2 overflow-hidden">
         <svg
           width="14"
@@ -400,13 +485,83 @@ function WorkspaceToolbar({
             strokeLinejoin="round"
           />
         </svg>
-        <span className="truncate text-sm font-medium text-foreground">
-          {title || "Untitled Game"}
+        {isEditingTitle ? (
+          <input
+            ref={titleInputRef}
+            type="text"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            onBlur={handleTitleSubmit}
+            onKeyDown={handleTitleKeyDown}
+            className="w-48 truncate rounded border border-accent-cyan/40 bg-card px-1.5 py-0.5 text-sm font-medium text-foreground outline-none focus:border-accent-cyan sm:w-64"
+            maxLength={255}
+          />
+        ) : (
+          <button
+            onClick={() => setIsEditingTitle(true)}
+            className="group flex items-center gap-1.5 truncate"
+            title="Click to edit title"
+          >
+            <span className="truncate text-sm font-medium text-foreground">
+              {title || "Untitled Game"}
+            </span>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="shrink-0 text-muted opacity-0 transition-opacity group-hover:opacity-100"
+            >
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+          </button>
+        )}
+
+        {/* Visibility badge */}
+        <span
+          className={`hidden shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium sm:inline-flex ${
+            isPublic
+              ? "bg-green-500/10 text-green-400"
+              : "bg-white/[0.04] text-muted"
+          }`}
+        >
+          {isPublic ? "Public" : "Private"}
         </span>
       </div>
 
-      {/* Save controls */}
+      {/* Right controls */}
       <div className="flex items-center gap-2">
+        {/* Metadata panel toggle */}
+        <button
+          onClick={onToggleMetadataPanel}
+          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors border ${
+            showMetadataPanel
+              ? "border-accent-cyan/30 bg-accent-cyan/10 text-accent-cyan"
+              : "border-card-border bg-card text-foreground hover:bg-white/[0.06]"
+          }`}
+          title="Edit game details"
+        >
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          <span className="hidden sm:inline">Details</span>
+        </button>
+
         {/* Save status indicator */}
         <span className="hidden text-xs text-muted sm:inline-flex items-center gap-1.5">
           {isSaving ? (
