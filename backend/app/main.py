@@ -12,6 +12,7 @@ from slowapi.util import get_remote_address
 load_dotenv()
 
 from app.database import Base, engine  # noqa: E402
+import app.models  # noqa: E402, F401 — register models with Base.metadata
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
