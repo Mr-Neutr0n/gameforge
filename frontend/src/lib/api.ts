@@ -50,6 +50,17 @@ export interface GameWithConversation extends Game {
   audit_results?: AuditResult[];
 }
 
+export interface PublicGame {
+  id: string;
+  title: string | null;
+  description: string | null;
+  game_code: string | null;
+  thumbnail_url: string | null;
+  is_public: boolean;
+  created_at: string;
+  creator_name: string | null;
+}
+
 export interface CreateGameRequest {
   prompt: string;
   template_type?: "platformer" | "topdown" | "shooter" | "puzzle" | "custom";
@@ -152,8 +163,8 @@ export async function getGame(id: string): Promise<GameWithConversation> {
   return request<GameWithConversation>(`/api/games/${id}`);
 }
 
-export async function getPublicGame(id: string): Promise<GameWithConversation> {
-  return request<GameWithConversation>(`/api/games/${id}/public`);
+export async function getPublicGame(id: string): Promise<PublicGame> {
+  return request<PublicGame>(`/api/games/${id}/public`);
 }
 
 export async function createGame(data: CreateGameRequest): Promise<Game> {
