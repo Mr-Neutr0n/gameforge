@@ -1,0 +1,22 @@
+# Ralph Configuration
+
+# Project identification
+PROJECT_NAME="lovable-for-games"
+PROJECT_TYPE="typescript"
+
+# Loop settings
+MAX_CALLS_PER_HOUR=50
+CLAUDE_TIMEOUT_MINUTES=25
+CLAUDE_OUTPUT_FORMAT=json
+
+# Tool permissions — full access for this project (frontend + backend + web research)
+ALLOWED_TOOLS="Write,Read,Edit,Glob,Grep,WebSearch,WebFetch,Bash(git *),Bash(npm *),Bash(npx *),Bash(node *),Bash(python *),Bash(python3 *),Bash(pip *),Bash(pip3 *),Bash(pytest),Bash(ls *),Bash(mkdir *),Bash(cd *),Bash(cat *),Bash(cp *),Bash(mv *),Bash(rm *),Bash(touch *),Bash(chmod *),Bash(which *),Bash(curl *)"
+
+# Session management
+SESSION_CONTINUITY=false
+SESSION_EXPIRY_HOURS=24
+
+# Circuit breaker — more lenient for a large project
+CB_NO_PROGRESS_THRESHOLD=5
+CB_SAME_ERROR_THRESHOLD=7
+CB_COOLDOWN_MINUTES=15
