@@ -1,3 +1,4 @@
+import logging
 import os
 from contextlib import asynccontextmanager
 
@@ -5,23 +6,23 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from slowapi.util import get_remote_address
 
 load_dotenv()
 
 from app.database import Base, engine  # noqa: E402
 import app.models  # noqa: E402, F401 — register models with Base.metadata
+from app.rate_limit import limiter  # noqa: E402
 from app.routes.auth import router as auth_router  # noqa: E402
 from app.routes.games import router as games_router  # noqa: E402
 from app.routes.generate import router as generate_router  # noqa: E402
 from app.routes.audit import router as audit_router  # noqa: E402
 
+logger = logging.getLogger(__name__)
+
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
-
-limiter = Limiter(key_func=get_remote_address)
 
 
 @asynccontextmanager
@@ -70,6 +71,7 @@ async def health_check():
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    logger.exception("Unhandled exception on %s %s", request.method, request.url.path)
     return JSONResponse(
         status_code=500,
         content={"detail": "Internal server error"},

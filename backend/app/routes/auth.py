@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -11,6 +11,7 @@ from app.auth import (
 )
 from app.database import get_db
 from app.models import User
+from app.rate_limit import limiter
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -33,7 +34,12 @@ class UserResponse(BaseModel):
 
 
 @router.post("/google", response_model=AuthResponse)
-async def auth_google(body: OAuthTokenRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+async def auth_google(
+    request: Request,
+    body: OAuthTokenRequest,
+    db: Session = Depends(get_db),
+):
     """Authenticate with a Google OAuth access token."""
     user_info = await verify_google_token(body.access_token)
     user = get_or_create_user(
@@ -57,7 +63,12 @@ async def auth_google(body: OAuthTokenRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/github", response_model=AuthResponse)
-async def auth_github(body: OAuthTokenRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+async def auth_github(
+    request: Request,
+    body: OAuthTokenRequest,
+    db: Session = Depends(get_db),
+):
     """Authenticate with a GitHub OAuth access token."""
     user_info = await verify_github_token(body.access_token)
     user = get_or_create_user(
@@ -81,7 +92,11 @@ async def auth_github(body: OAuthTokenRequest, db: Session = Depends(get_db)):
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_me(user: User = Depends(get_current_user)):
+@limiter.limit("30/minute")
+async def get_me(
+    request: Request,
+    user: User = Depends(get_current_user),
+):
     """Return the currently authenticated user."""
     return UserResponse(
         id=user.id,

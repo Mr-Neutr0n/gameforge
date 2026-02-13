@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AppLayout from "@/components/AppLayout";
+import { useToast } from "@/components/Toast";
 import { createGame, type CreateGameRequest } from "@/lib/api";
 
 type TemplateType = "platformer" | "topdown" | "shooter" | "puzzle";
@@ -148,6 +149,7 @@ function CreateSidebar() {
 
 function CreateContent() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [prompt, setPrompt] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateType | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -183,7 +185,9 @@ function CreateContent() {
       const game = await createGame(data);
       router.push(`/workspace/${game.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create game");
+      const message = err instanceof Error ? err.message : "Failed to create game";
+      setError(message);
+      showToast(message, "error");
       setGenerating(false);
     }
   };

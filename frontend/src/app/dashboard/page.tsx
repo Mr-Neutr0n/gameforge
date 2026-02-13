@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AppLayout from "@/components/AppLayout";
 import ConfirmModal from "@/components/ConfirmModal";
+import { useToast } from "@/components/Toast";
 import { deleteGame, getMyGames, type Game } from "@/lib/api";
 
 function formatDate(dateStr: string): string {
@@ -329,6 +330,7 @@ function EmptyState({ onCreateGame }: { onCreateGame: () => void }) {
 
 function DashboardContent() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -384,7 +386,8 @@ function DashboardContent() {
       setGames((prev) => prev.filter((g) => g.id !== deleteTarget.id));
       setDeleteTarget(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete game");
+      const message = err instanceof Error ? err.message : "Failed to delete game";
+      showToast(message, "error");
     } finally {
       setDeleting(false);
     }

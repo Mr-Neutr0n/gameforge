@@ -1,12 +1,14 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from app.auth import get_current_user
 from app.database import get_db
 from app.models import Conversation, Game, User
+from app.rate_limit import MAX_GAMES_PER_USER_PER_DAY, limiter
 
 router = APIRouter(prefix="/api/games", tags=["games"])
 
@@ -83,11 +85,28 @@ def _get_user_game(db: Session, game_id: str, user_id: str) -> Game:
     return game
 
 
+def _check_daily_game_limit(db: Session, user_id: str) -> None:
+    """Raise 429 if the user has exceeded the daily game creation limit."""
+    since = datetime.now(timezone.utc) - timedelta(days=1)
+    count = (
+        db.query(func.count(Game.id))
+        .filter(Game.user_id == user_id, Game.created_at >= since)
+        .scalar()
+    )
+    if count >= MAX_GAMES_PER_USER_PER_DAY:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Daily limit reached. You can create up to {MAX_GAMES_PER_USER_PER_DAY} games per day.",
+        )
+
+
 # ── Endpoints ────────────────────────────────────────────────────────────
 
 
 @router.get("", response_model=list[GameOut])
+@limiter.limit("30/minute")
 async def list_games(
+    request: Request,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -102,7 +121,9 @@ async def list_games(
 
 
 @router.get("/{game_id}", response_model=GameDetailOut)
+@limiter.limit("30/minute")
 async def get_game(
+    request: Request,
     game_id: str,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -122,12 +143,19 @@ async def get_game(
 
 
 @router.post("", response_model=GameOut, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 async def create_game(
+    request: Request,
     body: GameCreateRequest,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Create a new game from a prompt."""
+    """Create a new game from a prompt.
+
+    Enforces a per-user daily limit of MAX_GAMES_PER_USER_PER_DAY games.
+    """
+    _check_daily_game_limit(db, user.id)
+
     game = Game(
         user_id=user.id,
         title=body.title,
@@ -151,7 +179,9 @@ async def create_game(
 
 
 @router.patch("/{game_id}", response_model=GameOut)
+@limiter.limit("30/minute")
 async def update_game(
+    request: Request,
     game_id: str,
     body: GameUpdateRequest,
     user: User = Depends(get_current_user),
@@ -176,7 +206,9 @@ async def update_game(
 
 
 @router.delete("/{game_id}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("10/minute")
 async def delete_game(
+    request: Request,
     game_id: str,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -188,7 +220,9 @@ async def delete_game(
 
 
 @router.get("/{game_id}/conversations", response_model=list[ConversationOut])
+@limiter.limit("30/minute")
 async def get_conversations(
+    request: Request,
     game_id: str,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -205,7 +239,9 @@ async def get_conversations(
 
 
 @router.get("/{game_id}/public", response_model=GamePublicOut)
+@limiter.limit("60/minute")
 async def get_public_game(
+    request: Request,
     game_id: str,
     db: Session = Depends(get_db),
 ):

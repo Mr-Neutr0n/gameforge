@@ -120,6 +120,58 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Map HTTP status codes to user-friendly error messages.
+ */
+function friendlyErrorMessage(status: number, serverMessage?: string): string {
+  if (serverMessage) return serverMessage;
+
+  switch (status) {
+    case 400:
+      return "Invalid request. Please check your input.";
+    case 401:
+      return "Session expired. Please sign in again.";
+    case 403:
+      return "You don't have permission to do that.";
+    case 404:
+      return "The requested resource was not found.";
+    case 429:
+      return "Too many requests. Please wait a moment and try again.";
+    case 500:
+      return "Server error. Please try again later.";
+    case 502:
+    case 503:
+    case 504:
+      return "Service temporarily unavailable. Please try again.";
+    default:
+      return `Request failed (${status})`;
+  }
+}
+
+/**
+ * Check if a failed request should be retried.
+ * Only retry on network errors and 5xx server errors, not on 4xx client errors.
+ */
+function isRetryable(error: unknown): boolean {
+  // Network errors (fetch throws TypeError on network failures)
+  if (error instanceof TypeError) return true;
+  // Retry on 5xx and 429 (rate limited)
+  if (error instanceof ApiError) {
+    return error.status >= 500 || error.status === 429;
+  }
+  return false;
+}
+
+/**
+ * Sleep for a given number of milliseconds.
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const MAX_RETRIES = 3;
+const BASE_DELAY_MS = 500;
+
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const session = await getSession();
   const headers: Record<string, string> = {
@@ -137,30 +189,59 @@ async function request<T>(
 ): Promise<T> {
   const headers = await getAuthHeaders();
 
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      ...headers,
-      ...(options.headers as Record<string, string>),
-    },
-  });
+  let lastError: unknown;
 
-  if (!res.ok) {
-    let message = `Request failed with status ${res.status}`;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const body = await res.json();
-      message = body.detail || body.message || message;
-    } catch {
-      // response body wasn't JSON
+      const res = await fetch(`${API_URL}${path}`, {
+        ...options,
+        headers: {
+          ...headers,
+          ...(options.headers as Record<string, string>),
+        },
+      });
+
+      if (!res.ok) {
+        let serverMessage: string | undefined;
+        try {
+          const body = await res.json();
+          serverMessage = body.detail || body.message;
+        } catch {
+          // response body wasn't JSON
+        }
+        throw new ApiError(
+          res.status,
+          friendlyErrorMessage(res.status, serverMessage),
+        );
+      }
+
+      if (res.status === 204) {
+        return undefined as T;
+      }
+
+      return res.json();
+    } catch (err) {
+      lastError = err;
+
+      // Don't retry non-retryable errors or if this was the last attempt
+      if (!isRetryable(err) || attempt === MAX_RETRIES) {
+        break;
+      }
+
+      // Exponential backoff: 500ms, 1000ms, 2000ms
+      const delay = BASE_DELAY_MS * Math.pow(2, attempt);
+      await sleep(delay);
     }
-    throw new ApiError(res.status, message);
   }
 
-  if (res.status === 204) {
-    return undefined as T;
+  // Re-throw the last error
+  if (lastError instanceof ApiError) {
+    throw lastError;
   }
-
-  return res.json();
+  if (lastError instanceof TypeError) {
+    throw new ApiError(0, "Network error. Check your connection and try again.");
+  }
+  throw lastError;
 }
 
 // --- Auth ---

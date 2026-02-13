@@ -10,6 +10,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import MessageInput from "@/components/MessageInput";
 import GameMetadataEditor from "@/components/GameMetadataEditor";
 import QualityPanel from "@/components/QualityPanel";
+import { useToast } from "@/components/Toast";
 import {
   getGame,
   updateGame,
@@ -23,6 +24,7 @@ import {
 export default function WorkspacePage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const { showToast } = useToast();
   const gameId = params.id as string;
 
   const [game, setGame] = useState<GameWithConversation | null>(null);
@@ -113,6 +115,7 @@ export default function WorkspacePage() {
           },
           onError: (err) => {
             setGenerateError(err.message);
+            showToast(err.message, "error");
             setIsGenerating(false);
           },
           onComplete: () => {
@@ -120,6 +123,7 @@ export default function WorkspacePage() {
             // Backend auto-saves after generation — mark as saved
             setHasUnsavedChanges(false);
             setLastSavedAt(Date.now());
+            showToast("Game generated successfully", "success");
             // Refresh game data (title, conversations) from DB after generation
             getGame(gameId)
               .then((g) => {
@@ -136,7 +140,7 @@ export default function WorkspacePage() {
 
       abortRef.current = controller;
     },
-    [gameId, isGenerating],
+    [gameId, isGenerating, showToast],
   );
 
   // Auto-start generation if game has a prompt but no code
@@ -209,6 +213,7 @@ export default function WorkspacePage() {
         },
         onError: (err) => {
           setGenerateError(err.message);
+          showToast(err.message, "error");
           setIsGenerating(false);
         },
         onComplete: () => {
@@ -216,6 +221,7 @@ export default function WorkspacePage() {
           // Backend auto-saves after iteration — mark as saved
           setHasUnsavedChanges(false);
           setLastSavedAt(Date.now());
+          showToast("Game updated successfully", "success");
           // Refresh conversation history from DB after iteration
           getGame(gameId)
             .then((g) => {
@@ -230,7 +236,7 @@ export default function WorkspacePage() {
 
       abortRef.current = controller;
     },
-    [gameId, isGenerating],
+    [gameId, isGenerating, showToast],
   );
 
   // Manual save handler — persists current gameCode to DB
@@ -242,12 +248,12 @@ export default function WorkspacePage() {
       savedCodeRef.current = gameCode;
       setHasUnsavedChanges(false);
       setLastSavedAt(Date.now());
-    } catch {
-      // Save failed — changes remain unsaved
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Failed to save game", "error");
     } finally {
       setIsSaving(false);
     }
-  }, [gameId, gameCode, isSaving]);
+  }, [gameId, gameCode, isSaving, showToast]);
 
   // Metadata update handler — persists title, description, visibility
   const handleMetadataUpdate = useCallback(
@@ -257,11 +263,11 @@ export default function WorkspacePage() {
         if (updates.title !== undefined) setGameTitle(updated.title);
         if (updates.description !== undefined) setGameDescription(updated.description);
         if (updates.is_public !== undefined) setIsPublic(updated.is_public);
-      } catch {
-        // Update failed silently — user can retry
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : "Failed to update game", "error");
       }
     },
-    [gameId],
+    [gameId, showToast],
   );
 
   // Ctrl+S / Cmd+S keyboard shortcut for save

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -11,6 +11,7 @@ from app.audits.logic_audit import run_logic_audit
 from app.audits.ui_audit import run_ui_audit
 from app.audits.code_audit import run_code_audit
 from app.audits.orchestrator import run_all_audits
+from app.rate_limit import limiter
 
 router = APIRouter(prefix="/api/games", tags=["audits"])
 
@@ -58,7 +59,9 @@ def _get_user_game(db: Session, game_id: str, user_id: str) -> Game:
 
 
 @router.post("/{game_id}/audit/logic", response_model=AuditResponse)
+@limiter.limit("20/minute")
 async def audit_logic(
+    request: Request,
     game_id: str,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -100,7 +103,9 @@ async def audit_logic(
 
 
 @router.post("/{game_id}/audit/ui", response_model=AuditResponse)
+@limiter.limit("20/minute")
 async def audit_ui(
+    request: Request,
     game_id: str,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -140,7 +145,9 @@ async def audit_ui(
 
 
 @router.post("/{game_id}/audit/code", response_model=AuditResponse)
+@limiter.limit("20/minute")
 async def audit_code(
+    request: Request,
     game_id: str,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -196,7 +203,9 @@ class AuditAllResponse(BaseModel):
 
 
 @router.post("/{game_id}/audit/all", response_model=AuditAllResponse)
+@limiter.limit("10/minute")
 async def audit_all(
+    request: Request,
     game_id: str,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -230,7 +239,9 @@ async def audit_all(
 
 
 @router.get("/{game_id}/audits", response_model=list[AuditResultOut])
+@limiter.limit("30/minute")
 async def get_audit_results(
+    request: Request,
     game_id: str,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -258,7 +269,9 @@ async def get_audit_results(
 
 
 @router.get("/{game_id}/audits/public")
+@limiter.limit("60/minute")
 async def get_public_audit_summary(
+    request: Request,
     game_id: str,
     db: Session = Depends(get_db),
 ):

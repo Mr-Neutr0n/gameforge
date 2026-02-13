@@ -12,7 +12,7 @@ import json
 import logging
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 from app.auth import get_current_user
 from app.database import get_db
 from app.models import Conversation, ConversationRole, Game, StepType, User
+from app.rate_limit import limiter
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,9 @@ def _save_conversation(
 
 
 @router.post("/{game_id}/generate")
+@limiter.limit("5/hour")
 async def generate_game(
+    request: Request,
     game_id: str,
     body: GenerateRequest,
     user: User = Depends(get_current_user),
@@ -338,7 +341,9 @@ class IterateRequest(BaseModel):
 
 
 @router.post("/{game_id}/iterate")
+@limiter.limit("10/hour")
 async def iterate_game(
+    request: Request,
     game_id: str,
     body: IterateRequest,
     user: User = Depends(get_current_user),
