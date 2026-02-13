@@ -10,7 +10,7 @@
 
 ## Phase 2: Core Layout & UI
 - [x] TASK-007: Main app layout component: top bar (logo "GameForge" + user avatar + sign out), sidebar (conversation/activity feed, collapsible on mobile), center area (game preview iframe). Use CSS grid, responsive. Dark theme consistent with the portfolio aesthetic (near-black bg #0c0c0c, card bg #141414, cyan #22d3ee accent, purple #a855f7 accent). Font: Inter or Space Grotesk.
-- [ ] TASK-008: Landing page for unauthenticated users at `/`: hero section with tagline "describe a game, play it in seconds", sign-in buttons (Google + GitHub), 3-4 example game screenshots/previews. Clean, minimal, dark.
+- [x] TASK-008: Landing page for unauthenticated users at `/`: hero section with tagline "describe a game, play it in seconds", sign-in buttons (Google + GitHub), 3-4 example game screenshots/previews. Clean, minimal, dark.
 - [ ] TASK-009: User dashboard at `/dashboard`: grid of user's games (card with title, description, thumbnail placeholder, created date, public/private badge). "New Game" button prominent. Empty state: "No games yet. Create your first one." Sorted by newest first.
 - [ ] TASK-010: Game creation page at `/create`: large prompt textarea ("describe your game..."), template selector (platformer, top-down, shooter, puzzle — as clickable cards with icons), "Generate" button. After clicking generate, transitions to the game workspace view (task 007 layout with sidebar + preview).
 - [ ] TASK-011: Responsive design pass across all layouts. Mobile: sidebar collapses to bottom sheet, preview takes full width. Tablet: sidebar overlay. Desktop: three-pane layout.
