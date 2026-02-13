@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameForge — Game Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #0c0c0c;
+        }
+        #game-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #game-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
+
+    <script>
+    // Bridge: intercept console and errors, forward to parent frame
+    (function() {
+        var origin = '*';
+
+        function postToParent(type, data) {
+            try {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({ source: 'gameforge-preview', type: type, data: data }, origin);
+                }
+            } catch (e) {
+                // Silently fail if postMessage is blocked
+            }
+        }
+
+        // Intercept console.log
+        var originalLog = console.log;
+        console.log = function() {
+            var args = Array.prototype.slice.call(arguments);
+            var message = args.map(function(a) {
+                try { return typeof a === 'object' ? JSON.stringify(a) : String(a); }
+                catch (e) { return String(a); }
+            }).join(' ');
+            postToParent('log', { message: message });
+            originalLog.apply(console, arguments);
+        };
+
+        // Intercept console.warn
+        var originalWarn = console.warn;
+        console.warn = function() {
+            var args = Array.prototype.slice.call(arguments);
+            var message = args.map(function(a) {
+                try { return typeof a === 'object' ? JSON.stringify(a) : String(a); }
+                catch (e) { return String(a); }
+            }).join(' ');
+            postToParent('warn', { message: message });
+            originalWarn.apply(console, arguments);
+        };
+
+        // Intercept console.error
+        var originalError = console.error;
+        console.error = function() {
+            var args = Array.prototype.slice.call(arguments);
+            var message = args.map(function(a) {
+                try { return typeof a === 'object' ? JSON.stringify(a) : String(a); }
+                catch (e) { return String(a); }
+            }).join(' ');
+            postToParent('error', { message: message });
+            originalError.apply(console, arguments);
+        };
+
+        // Global error handler
+        window.onerror = function(message, source, lineno, colno, error) {
+            var detail = message;
+            if (lineno) detail += ' (line ' + lineno + ')';
+            if (error && error.stack) detail += '\n' + error.stack;
+            postToParent('error', { message: detail });
+            return false;
+        };
+
+        // Unhandled promise rejection handler
+        window.addEventListener('unhandledrejection', function(event) {
+            var message = 'Unhandled Promise Rejection: ';
+            if (event.reason) {
+                message += event.reason.message || String(event.reason);
+                if (event.reason.stack) message += '\n' + event.reason.stack;
+            }
+            postToParent('error', { message: message });
+        });
+
+        // Notify parent that the iframe is ready
+        postToParent('ready', { timestamp: Date.now() });
+    })();
+    </script>
+
+    <script>
+    // Handle window resize — resize the Phaser game if it exists
+    window.addEventListener('resize', function() {
+        if (typeof game !== 'undefined' && game && game.scale) {
+            game.scale.resize(window.innerWidth, window.innerHeight);
+        }
+    });
+    </script>
+
+    <script>
+    // === GENERATED GAME CODE START ===
+    {{GAME_CODE}}
+    // === GENERATED GAME CODE END ===
+    </script>
+</body>
+</html>
