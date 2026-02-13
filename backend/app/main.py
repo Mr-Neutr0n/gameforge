@@ -14,6 +14,7 @@ load_dotenv()
 from app.database import Base, engine  # noqa: E402
 import app.models  # noqa: E402, F401 — register models with Base.metadata
 from app.routes.auth import router as auth_router  # noqa: E402
+from app.routes.games import router as games_router  # noqa: E402
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
@@ -55,6 +56,7 @@ app.add_middleware(
 
 # Routers
 app.include_router(auth_router)
+app.include_router(games_router)
 
 
 @app.get("/api/health")
