@@ -3,8 +3,6 @@
 Each function receives a ToolContext from the ADK framework, which provides
 access to session state (tool_context.state) for reading and writing data
 shared across agents in a pipeline.
-
-These are stubs — full implementations come in TASK-017.
 """
 
 import re
