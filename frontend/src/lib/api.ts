@@ -59,6 +59,7 @@ export interface UpdateGameRequest {
   title?: string;
   description?: string;
   is_public?: boolean;
+  game_code?: string;
 }
 
 export interface SSEEvent {

@@ -25,6 +25,7 @@ class GameUpdateRequest(BaseModel):
     title: str | None = Field(None, max_length=255)
     description: str | None = None
     is_public: bool | None = None
+    game_code: str | None = None
 
 
 class ConversationOut(BaseModel):
@@ -165,6 +166,8 @@ async def update_game(
         game.description = body.description
     if body.is_public is not None:
         game.is_public = body.is_public
+    if body.game_code is not None:
+        game.game_code = body.game_code
 
     game.updated_at = datetime.now(timezone.utc)
     db.commit()

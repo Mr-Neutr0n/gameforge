@@ -97,6 +97,7 @@ async def generate_game(
         last_progress_index = 0
         fix_iteration = 0
         final_game_code = None
+        captured_plan = None
 
         try:
             # Emit initial event
@@ -136,6 +137,7 @@ async def generate_game(
                     # Check for game plan in state
                     if state_delta and "game_plan" in state_delta:
                         plan_content = state_delta["game_plan"]
+                        captured_plan = plan_content
                         yield _sse_event({
                             "type": "thinking",
                             "agent": "planner",
@@ -247,9 +249,11 @@ async def generate_game(
                 game_record.game_code = final_game_code
                 game_record.updated_at = datetime.now(timezone.utc)
 
-                # Auto-set title from plan if not already set
+                # Auto-set title from planner output if not already set
                 if not game_record.title:
-                    game_record.title = _extract_title_from_prompt(body.prompt)
+                    game_record.title = _extract_title_from_plan(
+                        captured_plan, body.prompt
+                    )
 
                 db.commit()
 
@@ -276,12 +280,23 @@ async def generate_game(
     )
 
 
-def _extract_title_from_prompt(prompt: str) -> str:
-    """Generate a short title from the user prompt.
+def _extract_title_from_plan(plan_content: str | dict | None, prompt: str) -> str:
+    """Extract a game title from the planner's JSON output.
 
-    Takes the first 50 characters of the prompt, truncating at the last
-    word boundary if needed, and title-cases the result.
+    Falls back to truncating the user prompt if no plan or game_title is
+    available.
     """
+    # Try to get game_title from the plan
+    if plan_content:
+        try:
+            plan = plan_content if isinstance(plan_content, dict) else json.loads(plan_content)
+            title = plan.get("game_title")
+            if title and isinstance(title, str) and title.strip():
+                return title.strip()[:255]
+        except (json.JSONDecodeError, TypeError, AttributeError):
+            pass
+
+    # Fallback: truncate the prompt
     clean = prompt.strip()
     if len(clean) <= 50:
         return clean.title()

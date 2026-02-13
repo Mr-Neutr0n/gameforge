@@ -10,6 +10,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import MessageInput from "@/components/MessageInput";
 import {
   getGame,
+  updateGame,
   streamGameGeneration,
   streamGameIteration,
   type SSEEvent,
@@ -29,9 +30,15 @@ export default function WorkspacePage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [startTime, setStartTime] = useState<number | undefined>(undefined);
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+  const [gameTitle, setGameTitle] = useState<string | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
   const hasStartedGeneration = useRef(false);
+  // Track the code that was last saved/loaded from the DB
+  const savedCodeRef = useRef<string | null>(null);
 
   // Load game data on mount
   useEffect(() => {
@@ -40,8 +47,10 @@ export default function WorkspacePage() {
       .then((g) => {
         if (cancelled) return;
         setGame(g);
+        setGameTitle(g.title || null);
         if (g.game_code) {
           setGameCode(g.game_code);
+          savedCodeRef.current = g.game_code;
         }
         // Load stored conversation history
         if (g.conversations && g.conversations.length > 0) {
@@ -88,10 +97,15 @@ export default function WorkspacePage() {
           },
           onComplete: () => {
             setIsGenerating(false);
-            // Refresh conversation history from DB after generation
+            // Backend auto-saves after generation — mark as saved
+            setHasUnsavedChanges(false);
+            setLastSavedAt(Date.now());
+            // Refresh game data (title, conversations) from DB after generation
             getGame(gameId)
               .then((g) => {
                 if (g.conversations) setConversations(g.conversations);
+                if (g.title) setGameTitle(g.title);
+                if (g.game_code) savedCodeRef.current = g.game_code;
                 // Clear live events since they're now in stored history
                 setEvents([]);
               })
@@ -120,6 +134,13 @@ export default function WorkspacePage() {
       startGeneration(game.prompt, templateType);
     }
   }, [game, searchParams, startGeneration]);
+
+  // Track unsaved changes when gameCode diverges from saved version
+  useEffect(() => {
+    if (gameCode && savedCodeRef.current !== null && gameCode !== savedCodeRef.current) {
+      setHasUnsavedChanges(true);
+    }
+  }, [gameCode]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -164,10 +185,14 @@ export default function WorkspacePage() {
         },
         onComplete: () => {
           setIsGenerating(false);
+          // Backend auto-saves after iteration — mark as saved
+          setHasUnsavedChanges(false);
+          setLastSavedAt(Date.now());
           // Refresh conversation history from DB after iteration
           getGame(gameId)
             .then((g) => {
               if (g.conversations) setConversations(g.conversations);
+              if (g.game_code) savedCodeRef.current = g.game_code;
               // Clear live events since they're now in stored history
               setEvents([]);
             })
@@ -179,6 +204,36 @@ export default function WorkspacePage() {
     },
     [gameId, isGenerating],
   );
+
+  // Manual save handler — persists current gameCode to DB
+  const handleSave = useCallback(async () => {
+    if (!gameCode || isSaving) return;
+    setIsSaving(true);
+    try {
+      await updateGame(gameId, { game_code: gameCode });
+      savedCodeRef.current = gameCode;
+      setHasUnsavedChanges(false);
+      setLastSavedAt(Date.now());
+    } catch {
+      // Save failed — changes remain unsaved
+    } finally {
+      setIsSaving(false);
+    }
+  }, [gameId, gameCode, isSaving]);
+
+  // Ctrl+S / Cmd+S keyboard shortcut for save
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+        e.preventDefault();
+        if (gameCode && !isSaving && hasUnsavedChanges) {
+          handleSave();
+        }
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [gameCode, isSaving, hasUnsavedChanges, handleSave]);
 
   // Manual generate button handler
   const handleGenerate = () => {
@@ -202,6 +257,16 @@ export default function WorkspacePage() {
           />
         }
       >
+        {/* Workspace toolbar with title + save */}
+        {gameCode && (
+          <WorkspaceToolbar
+            title={gameTitle}
+            isSaving={isSaving}
+            hasUnsavedChanges={hasUnsavedChanges}
+            lastSavedAt={lastSavedAt}
+            onSave={handleSave}
+          />
+        )}
         {gameCode ? (
           <GamePreview gameCode={gameCode} />
         ) : (
@@ -287,6 +352,115 @@ function WorkspaceSidebar({
         hasGameCode={hasGameCode}
         onSend={onSendMessage}
       />
+    </div>
+  );
+}
+
+function WorkspaceToolbar({
+  title,
+  isSaving,
+  hasUnsavedChanges,
+  lastSavedAt,
+  onSave,
+}: {
+  title: string | null;
+  isSaving: boolean;
+  hasUnsavedChanges: boolean;
+  lastSavedAt: number | null;
+  onSave: () => void;
+}) {
+  const formatSavedTime = (ts: number) => {
+    const diff = Math.floor((Date.now() - ts) / 1000);
+    if (diff < 5) return "just now";
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    return new Date(ts).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  return (
+    <div className="flex h-10 shrink-0 items-center justify-between border-b border-card-border bg-background px-3 sm:px-4">
+      {/* Title */}
+      <div className="flex items-center gap-2 overflow-hidden">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="shrink-0 text-accent-purple"
+        >
+          <polygon
+            points="5 3 19 12 5 21 5 3"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="truncate text-sm font-medium text-foreground">
+          {title || "Untitled Game"}
+        </span>
+      </div>
+
+      {/* Save controls */}
+      <div className="flex items-center gap-2">
+        {/* Save status indicator */}
+        <span className="hidden text-xs text-muted sm:inline-flex items-center gap-1.5">
+          {isSaving ? (
+            <>
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-yellow-400" />
+              Saving...
+            </>
+          ) : hasUnsavedChanges ? (
+            <>
+              <span className="h-1.5 w-1.5 rounded-full bg-yellow-400" />
+              Unsaved
+            </>
+          ) : lastSavedAt ? (
+            <>
+              <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+              Saved {formatSavedTime(lastSavedAt)}
+            </>
+          ) : null}
+        </span>
+
+        {/* Save button */}
+        <button
+          onClick={onSave}
+          disabled={isSaving || !hasUnsavedChanges}
+          className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-card border border-card-border text-foreground hover:bg-white/[0.06]"
+          title={
+            isSaving
+              ? "Saving..."
+              : hasUnsavedChanges
+                ? "Save game (Ctrl+S)"
+                : "All changes saved"
+          }
+        >
+          {isSaving ? (
+            <div className="h-3 w-3 animate-spin rounded-full border border-muted border-t-foreground" />
+          ) : (
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
+            </svg>
+          )}
+          Save
+        </button>
+      </div>
     </div>
   );
 }
