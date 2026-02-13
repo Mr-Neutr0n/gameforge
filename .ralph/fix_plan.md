@@ -41,7 +41,7 @@
 - [x] TASK-028: Save game flow. After generation completes, auto-save game_code to DB. "Save" button in top bar for manual saves during iteration. Generate a title automatically from the planner's output. Save game_code as TEXT in the games table.
 - [x] TASK-029: Game share page at `frontend/src/app/game/[id]/page.tsx`. Public page (no auth required). Loads game from `GET /api/games/{id}/public`. Full-screen Phaser game in iframe. Shows title, description, creator name. OG meta tags with game title + description. "Made with GameForge" badge linking back to landing page.
 - [x] TASK-030: Game metadata editor. On the game workspace page, add an editable title (click to edit) and description field. Toggle public/private visibility. PATCH to `/api/games/{id}`.
-- [ ] TASK-031: Delete game. Confirmation modal. DELETE to `/api/games/{id}`. Redirect to dashboard after deletion. On dashboard, each game card has a "..." menu with Delete option.
+- [x] TASK-031: Delete game. Confirmation modal. DELETE to `/api/games/{id}`. Redirect to dashboard after deletion. On dashboard, each game card has a "..." menu with Delete option.
 
 ## Phase 7: Audit Pipeline
 - [ ] TASK-032: Logic audit in `backend/app/audits/logic_audit.py`. Automated checks on generated game_code (string analysis, regex, AST-lite): (1) `new Phaser.Game` exists, (2) At least one `Phaser.Scene` subclass or scene config, (3) `create()` method exists, (4) `update()` method exists, (5) Player entity created in create(), (6) Input handling exists (keyboard/pointer), (7) No infinite loops (no `while(true)` without break), (8) Score or state variable exists. Returns `{passed: bool, score: int 0-100, details: [...]}`. Endpoint: `POST /api/games/{id}/audit/logic`.

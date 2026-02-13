@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AppLayout from "@/components/AppLayout";
-import { getMyGames, type Game } from "@/lib/api";
+import ConfirmModal from "@/components/ConfirmModal";
+import { deleteGame, getMyGames, type Game } from "@/lib/api";
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -42,87 +43,186 @@ function getGameColor(prompt: string | null): string {
   return GAME_TYPE_COLORS.custom;
 }
 
-function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
+function GameCard({
+  game,
+  onClick,
+  onDelete,
+}: {
+  game: Game;
+  onClick: () => void;
+  onDelete: () => void;
+}) {
   const color = getGameColor(game.prompt);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [menuOpen]);
 
   return (
-    <button
-      onClick={onClick}
-      className="group relative flex flex-col overflow-hidden rounded-2xl border border-card-border bg-card text-left transition-all hover:border-white/10 hover:bg-white/[0.03]"
-    >
-      {/* Thumbnail placeholder */}
-      <div
-        className="flex h-28 items-center justify-center sm:h-36"
-        style={{ backgroundColor: `${color}06` }}
-      >
-        {game.game_code ? (
-          <div className="flex flex-col items-center gap-2">
-            <div
-              className="h-8 w-8 rounded-lg"
-              style={{ backgroundColor: `${color}25`, border: `2px solid ${color}50` }}
-            />
-            <div className="flex gap-1">
-              {[...Array(4)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-1 rounded-full"
-                  style={{
-                    width: `${10 + i * 6}px`,
-                    backgroundColor: `${color}${i % 2 === 0 ? "30" : "18"}`,
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-1.5">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke={color}
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ opacity: 0.4 }}
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-card-border bg-card text-left transition-all hover:border-white/10 hover:bg-white/[0.03]">
+      {/* Menu button */}
+      <div ref={menuRef} className="absolute right-2 top-2 z-10">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuOpen((prev) => !prev);
+          }}
+          className="flex h-7 w-7 items-center justify-center rounded-lg bg-black/40 text-muted opacity-0 backdrop-blur-sm transition-all hover:bg-black/60 hover:text-foreground group-hover:opacity-100"
+          aria-label="Game options"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <circle cx="12" cy="5" r="2" />
+            <circle cx="12" cy="12" r="2" />
+            <circle cx="12" cy="19" r="2" />
+          </svg>
+        </button>
+
+        {menuOpen && (
+          <div className="absolute right-0 top-8 w-36 overflow-hidden rounded-xl border border-card-border bg-[#1a1a1a] shadow-xl">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen(false);
+                onClick();
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-xs text-muted transition-colors hover:bg-white/[0.04] hover:text-foreground"
             >
-              <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-              <line x1="8" y1="21" x2="16" y2="21" />
-              <line x1="12" y1="17" x2="12" y2="21" />
-            </svg>
-            <span className="text-[10px] text-muted">No preview</span>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              Open
+            </button>
+            <div className="mx-2 border-t border-card-border" />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen(false);
+                onDelete();
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-xs text-red-400 transition-colors hover:bg-red-500/10"
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 6h18" />
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+              </svg>
+              Delete
+            </button>
           </div>
         )}
       </div>
 
-      {/* Card content */}
-      <div className="flex flex-1 flex-col p-3 sm:p-4">
-        <div className="mb-1.5 flex items-center gap-2 sm:mb-2">
-          <span
-            className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium ${
-              game.is_public
-                ? "bg-accent-cyan/10 text-accent-cyan"
-                : "bg-white/[0.04] text-muted"
-            }`}
-          >
-            {game.is_public ? "Public" : "Private"}
-          </span>
+      {/* Clickable card area */}
+      <button onClick={onClick} className="flex flex-1 flex-col text-left">
+        {/* Thumbnail placeholder */}
+        <div
+          className="flex h-28 w-full items-center justify-center sm:h-36"
+          style={{ backgroundColor: `${color}06` }}
+        >
+          {game.game_code ? (
+            <div className="flex flex-col items-center gap-2">
+              <div
+                className="h-8 w-8 rounded-lg"
+                style={{ backgroundColor: `${color}25`, border: `2px solid ${color}50` }}
+              />
+              <div className="flex gap-1">
+                {[...Array(4)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-1 rounded-full"
+                    style={{
+                      width: `${10 + i * 6}px`,
+                      backgroundColor: `${color}${i % 2 === 0 ? "30" : "18"}`,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-1.5">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={color}
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ opacity: 0.4 }}
+              >
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
+              <span className="text-[10px] text-muted">No preview</span>
+            </div>
+          )}
         </div>
 
-        <h3 className="text-xs font-semibold text-foreground leading-snug line-clamp-1 sm:text-sm">
-          {game.title || "Untitled Game"}
-        </h3>
+        {/* Card content */}
+        <div className="flex flex-1 flex-col p-3 sm:p-4">
+          <div className="mb-1.5 flex items-center gap-2 sm:mb-2">
+            <span
+              className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium ${
+                game.is_public
+                  ? "bg-accent-cyan/10 text-accent-cyan"
+                  : "bg-white/[0.04] text-muted"
+              }`}
+            >
+              {game.is_public ? "Public" : "Private"}
+            </span>
+          </div>
 
-        <p className="mt-1 hidden text-xs text-muted leading-relaxed line-clamp-2 sm:block">
-          {game.description || game.prompt || "No description"}
-        </p>
+          <h3 className="text-xs font-semibold text-foreground leading-snug line-clamp-1 sm:text-sm">
+            {game.title || "Untitled Game"}
+          </h3>
 
-        <div className="mt-auto pt-3">
-          <span className="text-[11px] text-muted/60">{formatDate(game.created_at)}</span>
+          <p className="mt-1 hidden text-xs text-muted leading-relaxed line-clamp-2 sm:block">
+            {game.description || game.prompt || "No description"}
+          </p>
+
+          <div className="mt-auto pt-3">
+            <span className="text-[11px] text-muted/60">{formatDate(game.created_at)}</span>
+          </div>
         </div>
-      </div>
-    </button>
+      </button>
+    </div>
   );
 }
 
@@ -232,6 +332,8 @@ function DashboardContent() {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Game | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -272,6 +374,20 @@ function DashboardContent() {
 
   const handleOpenGame = (gameId: string) => {
     router.push(`/workspace/${gameId}`);
+  };
+
+  const handleDeleteGame = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await deleteGame(deleteTarget.id);
+      setGames((prev) => prev.filter((g) => g.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete game");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   if (loading) {
@@ -371,11 +487,25 @@ function DashboardContent() {
                 key={game.id}
                 game={game}
                 onClick={() => handleOpenGame(game.id)}
+                onDelete={() => setDeleteTarget(game)}
               />
             ))}
           </div>
         </div>
       </div>
+
+      {/* Delete confirmation modal */}
+      <ConfirmModal
+        open={deleteTarget !== null}
+        title="Delete game"
+        description={`Are you sure you want to delete "${deleteTarget?.title || "Untitled Game"}"? This will permanently remove the game, its conversation history, and all audit results. This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        destructive
+        loading={deleting}
+        onConfirm={handleDeleteGame}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </AppLayout>
   );
 }
