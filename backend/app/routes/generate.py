@@ -1,8 +1,11 @@
-"""SSE streaming endpoint for game generation.
+"""SSE streaming endpoints for game generation and iteration.
 
 POST /api/games/{id}/generate — kicks off the ADK coordinator agent pipeline,
 streams progress events to the frontend via Server-Sent Events, saves the
 final game code and conversation history to the database.
+
+POST /api/games/{id}/iterate — runs the iterator agent to modify an existing
+game based on a user message, streams SSE events, saves updated code to DB.
 """
 
 import json
@@ -288,3 +291,183 @@ def _extract_title_from_prompt(prompt: str) -> str:
     if last_space > 20:
         truncated = truncated[:last_space]
     return truncated.title() + "..."
+
+
+# ---------------------------------------------------------------------------
+# Iterate endpoint — modify an existing game via the iterator agent
+# ---------------------------------------------------------------------------
+
+
+class IterateRequest(BaseModel):
+    message: str = Field(..., min_length=1, max_length=5000)
+
+
+@router.post("/{game_id}/iterate")
+async def iterate_game(
+    game_id: str,
+    body: IterateRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Iterate on an existing game via the iterator agent, streaming SSE.
+
+    The iterator agent reads the current game code from session state,
+    applies the user's requested changes, validates the result, and writes
+    the updated code back. Progress is streamed as SSE events.
+
+    Streams events:
+        - {"type": "thinking", "agent": "iterator", "content": "..."}
+        - {"type": "code", "filename": "game.js", "content": "..."}
+        - {"type": "complete", "game_code": "..."}
+        - {"type": "error", "message": "..."}
+    """
+    # Verify the game exists and belongs to the user
+    game = (
+        db.query(Game)
+        .filter(Game.id == game_id, Game.user_id == user.id)
+        .first()
+    )
+    if not game:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Game not found"
+        )
+
+    # Game must have existing code to iterate on
+    if not game.game_code:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Game has no code to iterate on. Generate a game first.",
+        )
+
+    # Load last 10 conversation entries for context
+    recent_conversations = (
+        db.query(Conversation)
+        .filter(Conversation.game_id == game_id)
+        .order_by(Conversation.created_at.desc())
+        .limit(10)
+        .all()
+    )
+    # Reverse so they're in chronological order
+    recent_conversations.reverse()
+
+    conversation_context = [
+        {"role": c.role, "content": c.content}
+        for c in recent_conversations
+    ]
+
+    existing_code = game.game_code
+
+    async def event_stream():
+        """Async generator that runs the iterator and yields SSE events."""
+        from app.agents.runner import run_game_iteration
+
+        last_progress_index = 0
+        final_game_code = None
+
+        try:
+            # Emit initial event
+            yield _sse_event({
+                "type": "thinking",
+                "agent": "iterator",
+                "content": "Analyzing your request and current game code...",
+            })
+
+            # Save the user message as a conversation entry
+            _save_conversation(
+                db, game_id, ConversationRole.user, body.message, StepType.user
+            )
+
+            async for event in run_game_iteration(
+                message=body.message,
+                game_id=game_id,
+                existing_code=existing_code,
+                conversation_context=conversation_context,
+            ):
+                agent_name = getattr(event, "author", None) or "iterator"
+
+                # Check for new progress messages in state
+                if hasattr(event, "actions") and hasattr(event.actions, "state_delta"):
+                    state_delta = event.actions.state_delta
+                    if state_delta and "progress_messages" in state_delta:
+                        progress = state_delta["progress_messages"]
+                        for msg in progress[last_progress_index:]:
+                            yield _sse_event({
+                                "type": "thinking",
+                                "agent": agent_name,
+                                "content": msg,
+                            })
+                        last_progress_index = len(progress)
+
+                    # Check for updated game code in state
+                    if state_delta and "game_files" in state_delta:
+                        game_files = state_delta["game_files"]
+                        if isinstance(game_files, dict) and "game.js" in game_files:
+                            code = game_files["game.js"]
+                            final_game_code = code
+                            yield _sse_event({
+                                "type": "code",
+                                "filename": "game.js",
+                                "content": code,
+                            })
+
+                # Check for text content (iterator's summary response)
+                if hasattr(event, "content") and event.content:
+                    parts = getattr(event.content, "parts", None)
+                    if parts:
+                        for part in parts:
+                            text = getattr(part, "text", None)
+                            if text and agent_name == "iterator":
+                                yield _sse_event({
+                                    "type": "thinking",
+                                    "agent": "iterator",
+                                    "content": text,
+                                })
+
+            if final_game_code is None:
+                logger.warning(
+                    "No updated code captured from iterator for game %s",
+                    game_id,
+                )
+                yield _sse_event({
+                    "type": "error",
+                    "message": "Iteration completed but no updated code was produced.",
+                })
+                return
+
+            # Save the updated code to the database
+            game_record = db.query(Game).filter(Game.id == game_id).first()
+            if game_record:
+                game_record.game_code = final_game_code
+                game_record.updated_at = datetime.now(timezone.utc)
+                db.commit()
+
+            # Save the code update as a conversation entry
+            _save_conversation(
+                db,
+                game_id,
+                ConversationRole.agent,
+                final_game_code,
+                StepType.code,
+            )
+
+            yield _sse_event({
+                "type": "complete",
+                "game_code": final_game_code,
+            })
+
+        except Exception as e:
+            logger.exception("Error during game iteration for game %s", game_id)
+            yield _sse_event({
+                "type": "error",
+                "message": str(e),
+            })
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )

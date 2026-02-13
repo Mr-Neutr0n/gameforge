@@ -1,8 +1,8 @@
-"""ADK Runner setup for game generation.
+"""ADK Runner setup for game generation and iteration.
 
-Provides the run_game_generation() async generator that creates an ADK session,
-feeds the user prompt to the coordinator agent, and yields events as the
-multi-agent pipeline progresses.
+Provides:
+- run_game_generation() — runs the full coordinator pipeline for new games
+- run_game_iteration() — runs the iterator agent to modify existing games
 """
 
 import uuid
@@ -15,9 +15,10 @@ from google.adk.sessions import InMemorySessionService
 
 from app.agents.config import APP_NAME, MAX_LLM_CALLS
 
-# Lazy import to avoid circular dependency — root_agent is built at module
-# level in __init__.py, which imports tools/config that this module also uses.
+# Lazy imports to avoid circular dependency — agents are built at module
+# level, which imports tools/config that this module also uses.
 _runner: Runner | None = None
+_iterator_runner: Runner | None = None
 _session_service: InMemorySessionService | None = None
 
 
@@ -30,7 +31,7 @@ def _get_session_service() -> InMemorySessionService:
 
 
 def _get_runner() -> Runner:
-    """Return the singleton ADK Runner, creating it on first call."""
+    """Return the singleton ADK Runner for the coordinator pipeline."""
     global _runner
     if _runner is None:
         from app.agents import root_agent  # noqa: deferred import
@@ -41,6 +42,20 @@ def _get_runner() -> Runner:
             session_service=_get_session_service(),
         )
     return _runner
+
+
+def _get_iterator_runner() -> Runner:
+    """Return the singleton ADK Runner for the iterator agent."""
+    global _iterator_runner
+    if _iterator_runner is None:
+        from app.agents.iterator import iterator_agent  # noqa: deferred import
+
+        _iterator_runner = Runner(
+            app_name=f"{APP_NAME}-iterator",
+            agent=iterator_agent,
+            session_service=_get_session_service(),
+        )
+    return _iterator_runner
 
 
 async def run_game_generation(
@@ -95,6 +110,73 @@ async def run_game_generation(
     from google.adk.runners import RunConfig
 
     run_config = RunConfig(max_llm_calls=MAX_LLM_CALLS)
+
+    async for event in runner.run_async(
+        user_id=user_id,
+        session_id=session_id,
+        new_message=user_message,
+        run_config=run_config,
+    ):
+        yield event
+
+
+async def run_game_iteration(
+    message: str,
+    game_id: str,
+    existing_code: str,
+    conversation_context: list[dict[str, str]] | None = None,
+) -> AsyncGenerator[Event, None]:
+    """Run the iterator agent to modify an existing game and yield ADK events.
+
+    Creates a fresh ADK session pre-loaded with the existing game code, then
+    feeds the user's modification request to the iterator agent.
+
+    Args:
+        message: The user's change request.
+        game_id: Database ID of the game being modified.
+        existing_code: The current Phaser.js game code to modify.
+        conversation_context: Optional last N conversation entries for context.
+            Each entry is a dict with 'role' and 'content' keys.
+
+    Yields:
+        google.adk.events.Event instances as the iterator executes.
+    """
+    runner = _get_iterator_runner()
+    session_service = _get_session_service()
+
+    user_id = f"gameforge-user-{game_id}"
+    session_id = f"iterate-{game_id}-{uuid.uuid4().hex[:8]}"
+
+    # Pre-load the existing game code into session state
+    initial_state: dict[str, Any] = {
+        "game_id": game_id,
+        "game_files": {"game.js": existing_code},
+        "progress_messages": [],
+    }
+
+    # Include conversation context if provided
+    if conversation_context:
+        initial_state["conversation_context"] = conversation_context
+
+    await session_service.create_session(
+        app_name=f"{APP_NAME}-iterator",
+        user_id=user_id,
+        session_id=session_id,
+        state=initial_state,
+    )
+
+    # Build the user message with the change request
+    from google.genai import types
+
+    user_message = types.Content(
+        role="user",
+        parts=[types.Part(text=message)],
+    )
+
+    # Iterator gets a smaller LLM budget since it's a single agent
+    from google.adk.runners import RunConfig
+
+    run_config = RunConfig(max_llm_calls=20)
 
     async for event in runner.run_async(
         user_id=user_id,
