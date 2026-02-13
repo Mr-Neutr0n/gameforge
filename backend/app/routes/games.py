@@ -163,6 +163,7 @@ async def create_game(
         prompt=body.prompt,
     )
     db.add(game)
+    db.flush()  # Ensure game.id is assigned before referencing it
 
     # Store the initial user prompt as a conversation entry
     conversation = Conversation(
