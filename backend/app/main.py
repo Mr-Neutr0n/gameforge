@@ -16,6 +16,7 @@ import app.models  # noqa: E402, F401 — register models with Base.metadata
 from app.routes.auth import router as auth_router  # noqa: E402
 from app.routes.games import router as games_router  # noqa: E402
 from app.routes.generate import router as generate_router  # noqa: E402
+from app.routes.audit import router as audit_router  # noqa: E402
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
@@ -59,6 +60,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(games_router)
 app.include_router(generate_router)
+app.include_router(audit_router)
 
 
 @app.get("/api/health")
