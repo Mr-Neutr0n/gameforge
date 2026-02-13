@@ -13,7 +13,7 @@
 - [x] TASK-008: Landing page for unauthenticated users at `/`: hero section with tagline "describe a game, play it in seconds", sign-in buttons (Google + GitHub), 3-4 example game screenshots/previews. Clean, minimal, dark.
 - [x] TASK-009: User dashboard at `/dashboard`: grid of user's games (card with title, description, thumbnail placeholder, created date, public/private badge). "New Game" button prominent. Empty state: "No games yet. Create your first one." Sorted by newest first.
 - [x] TASK-010: Game creation page at `/create`: large prompt textarea ("describe your game..."), template selector (platformer, top-down, shooter, puzzle — as clickable cards with icons), "Generate" button. After clicking generate, transitions to the game workspace view (task 007 layout with sidebar + preview).
-- [ ] TASK-011: Responsive design pass across all layouts. Mobile: sidebar collapses to bottom sheet, preview takes full width. Tablet: sidebar overlay. Desktop: three-pane layout.
+- [x] TASK-011: Responsive design pass across all layouts. Mobile: sidebar collapses to bottom sheet, preview takes full width. Tablet: sidebar overlay. Desktop: three-pane layout.
 
 ## Phase 3: Phaser.js Runtime
 - [ ] TASK-012: Phaser.js game template system in `backend/app/templates/`. Create `base.html` — an HTML file that loads Phaser 3 from CDN (`<script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js">`), then injects generated game code via a `<script>` tag. The template should have a canvas container div, handle window resize, and post console errors + logs to parent via `window.parent.postMessage()`. Create a Python function `render_game_html(game_code: str) -> str` that injects code into the template.

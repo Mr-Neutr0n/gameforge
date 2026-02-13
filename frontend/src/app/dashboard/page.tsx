@@ -52,7 +52,7 @@ function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
     >
       {/* Thumbnail placeholder */}
       <div
-        className="flex h-36 items-center justify-center"
+        className="flex h-28 items-center justify-center sm:h-36"
         style={{ backgroundColor: `${color}06` }}
       >
         {game.game_code ? (
@@ -97,8 +97,8 @@ function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
       </div>
 
       {/* Card content */}
-      <div className="flex flex-1 flex-col p-4">
-        <div className="mb-2 flex items-center gap-2">
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
+        <div className="mb-1.5 flex items-center gap-2 sm:mb-2">
           <span
             className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium ${
               game.is_public
@@ -110,11 +110,11 @@ function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
           </span>
         </div>
 
-        <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-1">
+        <h3 className="text-xs font-semibold text-foreground leading-snug line-clamp-1 sm:text-sm">
           {game.title || "Untitled Game"}
         </h3>
 
-        <p className="mt-1 text-xs text-muted leading-relaxed line-clamp-2">
+        <p className="mt-1 hidden text-xs text-muted leading-relaxed line-clamp-2 sm:block">
           {game.description || game.prompt || "No description"}
         </p>
 
@@ -334,16 +334,16 @@ function DashboardContent() {
     <AppLayout sidebar={<DashboardSidebar gameCount={games.length} />}>
       <div className="flex flex-1 flex-col overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-card-border px-6 py-4">
+        <div className="flex items-center justify-between border-b border-card-border px-4 py-3 sm:px-6 sm:py-4">
           <div>
-            <h1 className="text-lg font-semibold text-foreground">My Games</h1>
+            <h1 className="text-base font-semibold text-foreground sm:text-lg">My Games</h1>
             <p className="text-xs text-muted">
               {games.length} {games.length === 1 ? "game" : "games"}
             </p>
           </div>
           <button
             onClick={handleCreateGame}
-            className="flex items-center gap-2 rounded-xl bg-accent-cyan px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+            className="flex items-center gap-2 rounded-xl bg-accent-cyan px-3 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 sm:px-4"
           >
             <svg
               width="14"
@@ -358,13 +358,14 @@ function DashboardContent() {
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
-            New Game
+            <span className="hidden sm:inline">New Game</span>
+            <span className="sm:hidden">New</span>
           </button>
         </div>
 
         {/* Game grid */}
-        <div className="p-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="p-4 sm:p-6">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
             {games.map((game) => (
               <GameCard
                 key={game.id}

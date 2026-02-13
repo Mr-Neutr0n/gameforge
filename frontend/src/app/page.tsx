@@ -43,10 +43,10 @@ function GameCard({
   color: string;
 }) {
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-card-border bg-card p-6 transition-all hover:border-white/10 hover:bg-white/[0.03]">
+    <div className="group relative overflow-hidden rounded-xl border border-card-border bg-card p-4 transition-all hover:border-white/10 hover:bg-white/[0.03] sm:rounded-2xl sm:p-6">
       {/* Faux game preview */}
       <div
-        className="mb-4 flex h-40 items-center justify-center rounded-xl"
+        className="mb-3 flex h-28 items-center justify-center rounded-lg sm:mb-4 sm:h-40 sm:rounded-xl"
         style={{ backgroundColor: `${color}08` }}
       >
         <div className="flex flex-col items-center gap-2">
@@ -142,48 +142,48 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col">
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-4 md:px-12">
-        <div className="text-xl font-bold tracking-tight">
+      <nav className="flex items-center justify-between px-4 py-4 sm:px-6 md:px-12">
+        <div className="text-lg font-bold tracking-tight sm:text-xl">
           <span className="text-accent-cyan">Game</span>
           <span className="text-accent-purple">Forge</span>
         </div>
         <button
           onClick={() => signIn()}
-          className="rounded-lg border border-card-border bg-card px-4 py-2 text-sm text-foreground transition-colors hover:bg-white/[0.06]"
+          className="rounded-lg border border-card-border bg-card px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-white/[0.06] sm:px-4 sm:py-2"
         >
           Sign in
         </button>
       </nav>
 
       {/* Hero */}
-      <section className="flex flex-1 flex-col items-center justify-center px-6 pb-16 pt-12 md:pt-20">
-        <div className="flex flex-col items-center gap-6 text-center">
-          <div className="rounded-full border border-card-border bg-card px-4 py-1.5 text-xs font-medium text-muted">
+      <section className="flex flex-1 flex-col items-center justify-center px-4 pb-12 pt-10 sm:px-6 sm:pb-16 sm:pt-12 md:pt-20">
+        <div className="flex flex-col items-center gap-5 text-center sm:gap-6">
+          <div className="rounded-full border border-card-border bg-card px-3 py-1 text-[11px] font-medium text-muted sm:px-4 sm:py-1.5 sm:text-xs">
             Powered by Gemini + Phaser.js
           </div>
-          <h1 className="max-w-2xl text-4xl font-bold leading-tight tracking-tight md:text-6xl">
+          <h1 className="max-w-2xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl md:text-6xl">
             Describe a game,{" "}
             <span className="bg-gradient-to-r from-accent-cyan to-accent-purple bg-clip-text text-transparent">
               play it in seconds
             </span>
           </h1>
-          <p className="max-w-lg text-base text-muted md:text-lg">
+          <p className="max-w-lg text-sm text-muted sm:text-base md:text-lg">
             GameForge turns your ideas into playable browser games using AI
             multi-agent orchestration. No code required.
           </p>
 
           {/* Auth buttons */}
-          <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-2 flex w-full max-w-sm flex-col gap-3 sm:mt-4 sm:w-auto sm:flex-row">
             <button
               onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-              className="flex items-center justify-center gap-2.5 rounded-xl bg-foreground px-6 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90"
+              className="flex items-center justify-center gap-2.5 rounded-xl bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90 sm:px-6"
             >
               <GoogleIcon />
               Continue with Google
             </button>
             <button
               onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
-              className="flex items-center justify-center gap-2.5 rounded-xl border border-card-border bg-card px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.06]"
+              className="flex items-center justify-center gap-2.5 rounded-xl border border-card-border bg-card px-5 py-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.06] sm:px-6"
             >
               <GitHubIcon />
               Continue with GitHub
@@ -193,12 +193,12 @@ export default function Home() {
       </section>
 
       {/* Example games */}
-      <section className="border-t border-card-border px-6 py-16 md:px-12">
+      <section className="border-t border-card-border px-4 py-10 sm:px-6 sm:py-16 md:px-12">
         <div className="mx-auto max-w-5xl">
-          <h2 className="mb-2 text-center text-sm font-medium uppercase tracking-widest text-muted">
+          <h2 className="mb-2 text-center text-xs font-medium uppercase tracking-widest text-muted sm:text-sm">
             What you can build
           </h2>
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-4">
             {EXAMPLE_GAMES.map((game) => (
               <GameCard key={game.title} {...game} />
             ))}
@@ -207,8 +207,8 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-card-border px-6 py-6 md:px-12">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
+      <footer className="border-t border-card-border px-4 py-5 sm:px-6 sm:py-6 md:px-12">
+        <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 sm:flex-row sm:justify-between">
           <div className="text-xs text-muted">
             <span className="text-accent-cyan">Game</span>
             <span className="text-accent-purple">Forge</span>

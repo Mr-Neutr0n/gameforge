@@ -2,25 +2,60 @@
 
 import { useSession, signOut } from "next-auth/react";
 import Image from "next/image";
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, useCallback, type ReactNode } from "react";
 
 interface AppLayoutProps {
   sidebar?: ReactNode;
   children: ReactNode;
 }
 
+type Breakpoint = "mobile" | "tablet" | "desktop";
+
+function useBreakpoint(): Breakpoint {
+  const [breakpoint, setBreakpoint] = useState<Breakpoint>("desktop");
+
+  useEffect(() => {
+    function update() {
+      const w = window.innerWidth;
+      if (w < 768) setBreakpoint("mobile");
+      else if (w < 1024) setBreakpoint("tablet");
+      else setBreakpoint("desktop");
+    }
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  return breakpoint;
+}
+
 export default function AppLayout({ sidebar, children }: AppLayoutProps) {
   const { data: session } = useSession();
+  const breakpoint = useBreakpoint();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // Close sidebar when switching to mobile/tablet
+  useEffect(() => {
+    if (breakpoint !== "desktop") {
+      setSidebarOpen(false);
+    } else {
+      setSidebarOpen(true);
+    }
+  }, [breakpoint]);
+
+  const closeSidebar = useCallback(() => setSidebarOpen(false), []);
+  const toggleSidebar = useCallback(() => setSidebarOpen((v) => !v), []);
+
+  const sidebarContent = sidebar || <DefaultSidebar />;
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
       {/* Top bar */}
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-card-border px-4">
         <div className="flex items-center gap-3">
-          {/* Mobile sidebar toggle */}
+          {/* Sidebar toggle (mobile + tablet) */}
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
+            onClick={toggleSidebar}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-card hover:text-foreground lg:hidden"
             aria-label="Toggle sidebar"
           >
@@ -84,7 +119,7 @@ export default function AppLayout({ sidebar, children }: AppLayoutProps) {
             )}
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
-              className="rounded-lg px-3 py-1.5 text-sm text-muted transition-colors hover:bg-card hover:text-foreground"
+              className="hidden sm:inline-flex rounded-lg px-3 py-1.5 text-sm text-muted transition-colors hover:bg-card hover:text-foreground"
             >
               Sign out
             </button>
@@ -94,27 +129,46 @@ export default function AppLayout({ sidebar, children }: AppLayoutProps) {
 
       {/* Main content area */}
       <div className="relative flex flex-1 overflow-hidden">
-        {/* Sidebar - desktop */}
+        {/* Sidebar - desktop (persistent left panel) */}
         <aside
           className={`hidden lg:flex w-80 shrink-0 flex-col border-r border-card-border bg-background transition-all duration-200 ${
             sidebarOpen ? "lg:w-80" : "lg:w-0 lg:overflow-hidden lg:border-r-0"
           }`}
         >
           <div className="flex h-full flex-col overflow-hidden">
-            {sidebar || <DefaultSidebar />}
+            {sidebarContent}
           </div>
         </aside>
 
-        {/* Sidebar - mobile overlay */}
-        {sidebarOpen && (
+        {/* Sidebar - tablet (left overlay, same as before) */}
+        {sidebarOpen && breakpoint === "tablet" && (
           <>
             <div
-              className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-              onClick={() => setSidebarOpen(false)}
+              className="fixed inset-0 z-40 bg-black/50"
+              onClick={closeSidebar}
             />
-            <aside className="fixed inset-y-14 left-0 z-50 flex w-80 flex-col border-r border-card-border bg-background lg:hidden">
+            <aside className="fixed inset-y-14 left-0 z-50 flex w-80 flex-col border-r border-card-border bg-background">
               <div className="flex h-full flex-col overflow-hidden">
-                {sidebar || <DefaultSidebar />}
+                {sidebarContent}
+              </div>
+            </aside>
+          </>
+        )}
+
+        {/* Sidebar - mobile (bottom sheet) */}
+        {sidebarOpen && breakpoint === "mobile" && (
+          <>
+            <div
+              className="fixed inset-0 z-40 bg-black/50"
+              onClick={closeSidebar}
+            />
+            <aside className="safe-bottom fixed inset-x-0 bottom-0 z-50 flex max-h-[70vh] flex-col rounded-t-2xl border-t border-card-border bg-background">
+              {/* Bottom sheet drag handle */}
+              <div className="flex shrink-0 items-center justify-center pb-1 pt-3">
+                <div className="h-1 w-10 rounded-full bg-white/20" />
+              </div>
+              <div className="flex flex-1 flex-col overflow-y-auto">
+                {sidebarContent}
               </div>
             </aside>
           </>
@@ -122,7 +176,7 @@ export default function AppLayout({ sidebar, children }: AppLayoutProps) {
 
         {/* Desktop sidebar toggle */}
         <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
+          onClick={toggleSidebar}
           className="hidden lg:flex absolute left-0 top-1/2 z-30 -translate-y-1/2 h-16 w-4 items-center justify-center rounded-r-md bg-card border border-l-0 border-card-border text-muted transition-colors hover:text-foreground hover:bg-card"
           style={{ left: sidebarOpen ? "320px" : "0px" }}
           aria-label="Toggle sidebar"
@@ -145,7 +199,7 @@ export default function AppLayout({ sidebar, children }: AppLayoutProps) {
           </svg>
         </button>
 
-        {/* Center - game preview / main content */}
+        {/* Center - game preview / main content (takes full width on mobile) */}
         <main className="flex flex-1 flex-col overflow-hidden">{children}</main>
       </div>
     </div>

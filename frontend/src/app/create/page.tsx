@@ -199,15 +199,15 @@ function CreateContent() {
     <AppLayout sidebar={<CreateSidebar />}>
       <div className="flex flex-1 flex-col overflow-y-auto">
         {/* Header */}
-        <div className="border-b border-card-border px-6 py-4">
-          <h1 className="text-lg font-semibold text-foreground">New Game</h1>
+        <div className="border-b border-card-border px-4 py-3 sm:px-6 sm:py-4">
+          <h1 className="text-base font-semibold text-foreground sm:text-lg">New Game</h1>
           <p className="mt-0.5 text-xs text-muted">
             Describe your game and let AI build it
           </p>
         </div>
 
-        <div className="flex flex-1 flex-col px-6 py-6">
-          <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+        <div className="flex flex-1 flex-col px-4 py-4 sm:px-6 sm:py-6">
+          <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 sm:gap-6">
             {/* Prompt input */}
             <div className="flex flex-col gap-2">
               <label
@@ -247,7 +247,7 @@ function CreateContent() {
                 </label>
                 <span className="text-xs text-muted">Optional</span>
               </div>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
                 {TEMPLATES.map((template) => {
                   const isSelected = selectedTemplate === template.id;
                   return (
@@ -255,7 +255,7 @@ function CreateContent() {
                       key={template.id}
                       onClick={() => handleTemplateClick(template)}
                       disabled={generating}
-                      className={`group relative flex flex-col items-center gap-2.5 rounded-xl border p-4 text-center transition-all disabled:opacity-50 ${
+                      className={`group relative flex flex-col items-center gap-2 rounded-xl border p-3 text-center transition-all disabled:opacity-50 sm:gap-2.5 sm:p-4 ${
                         isSelected
                           ? "border-white/20 bg-white/[0.04]"
                           : "border-card-border bg-card hover:border-white/10 hover:bg-white/[0.03]"
@@ -341,11 +341,11 @@ function CreateContent() {
             )}
 
             {/* Generate button */}
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <button
                 onClick={handleGenerate}
                 disabled={!canGenerate || generating}
-                className="flex items-center gap-2 rounded-xl bg-accent-cyan px-6 py-2.5 text-sm font-medium text-background transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex items-center justify-center gap-2 rounded-xl bg-accent-cyan px-6 py-2.5 text-sm font-medium text-background transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {generating ? (
                   <>
@@ -373,7 +373,7 @@ function CreateContent() {
               <button
                 onClick={() => router.push("/dashboard")}
                 disabled={generating}
-                className="rounded-xl px-4 py-2.5 text-sm text-muted transition-colors hover:bg-card hover:text-foreground disabled:opacity-50"
+                className="rounded-xl px-4 py-2.5 text-center text-sm text-muted transition-colors hover:bg-card hover:text-foreground disabled:opacity-50"
               >
                 Cancel
               </button>
