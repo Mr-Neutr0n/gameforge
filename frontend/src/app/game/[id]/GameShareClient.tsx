@@ -3,7 +3,12 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import GamePreview from "@/components/GamePreview";
-import { getPublicGame, type PublicGame } from "@/lib/api";
+import {
+  getPublicGame,
+  getPublicAuditSummary,
+  type PublicGame,
+  type PublicAuditSummary,
+} from "@/lib/api";
 
 interface GameShareClientProps {
   gameId: string;
@@ -23,6 +28,9 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [auditSummary, setAuditSummary] = useState<PublicAuditSummary | null>(
+    null,
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -43,6 +51,19 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
       }
     }
     load();
+    return () => {
+      cancelled = true;
+    };
+  }, [gameId]);
+
+  // Fetch public audit summary
+  useEffect(() => {
+    let cancelled = false;
+    getPublicAuditSummary(gameId)
+      .then((data) => {
+        if (!cancelled) setAuditSummary(data);
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -303,6 +324,37 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
                 <span>{formatDate(game.created_at)}</span>
               </div>
             </div>
+
+            {/* Quality badge — shown only if score > 80 */}
+            {auditSummary &&
+              auditSummary.has_audits &&
+              auditSummary.overall_score > 80 && (
+                <div className="mb-4 flex items-center gap-2.5 rounded-xl bg-green-400/5 p-3 border border-green-400/20">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-400/10">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-green-400"
+                    >
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-green-400">
+                      Quality Verified
+                    </p>
+                    <p className="text-[11px] text-muted">
+                      Score: {auditSummary.overall_score}/100
+                    </p>
+                  </div>
+                </div>
+              )}
 
             {/* Divider */}
             <div className="mb-5 border-t border-card-border" />

@@ -9,6 +9,7 @@ import ConversationHistory from "@/components/ConversationHistory";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import MessageInput from "@/components/MessageInput";
 import GameMetadataEditor from "@/components/GameMetadataEditor";
+import QualityPanel from "@/components/QualityPanel";
 import {
   getGame,
   updateGame,
@@ -38,6 +39,11 @@ export default function WorkspacePage() {
   const [gameDescription, setGameDescription] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(false);
   const [showMetadataPanel, setShowMetadataPanel] = useState(false);
+  const [auditData, setAuditData] = useState<{
+    overall_score: number;
+    overall_passed: boolean;
+    audits: Record<string, { passed: boolean; score: number }>;
+  } | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
   const hasStartedGeneration = useRef(false);
@@ -95,6 +101,14 @@ export default function WorkspacePage() {
             // Final game code on complete
             if (event.type === "complete" && event.game_code) {
               setGameCode(event.game_code);
+            }
+            // Capture audit results from SSE
+            if (event.type === "audit" && event.audits) {
+              setAuditData({
+                overall_score: event.overall_score ?? 0,
+                overall_passed: event.overall_passed ?? false,
+                audits: event.audits,
+              });
             }
           },
           onError: (err) => {
@@ -183,6 +197,14 @@ export default function WorkspacePage() {
           }
           if (event.type === "complete" && event.game_code) {
             setGameCode(event.game_code);
+          }
+          // Capture audit results from SSE
+          if (event.type === "audit" && event.audits) {
+            setAuditData({
+              overall_score: event.overall_score ?? 0,
+              overall_passed: event.overall_passed ?? false,
+              audits: event.audits,
+            });
           }
         },
         onError: (err) => {
@@ -304,6 +326,10 @@ export default function WorkspacePage() {
               handleMetadataUpdate({ is_public })
             }
           />
+        )}
+        {/* Quality audit panel */}
+        {gameCode && (
+          <QualityPanel gameId={gameId} sseAuditData={auditData} />
         )}
         {gameCode ? (
           <GamePreview gameCode={gameCode} />

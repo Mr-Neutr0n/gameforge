@@ -257,6 +257,26 @@ async def generate_game(
 
                 db.commit()
 
+            # Auto-run all audits after generation completes
+            audit_summary = None
+            try:
+                from app.audits.orchestrator import run_all_audits
+
+                audit_summary = run_all_audits(final_game_code, game_id, db)
+                yield _sse_event({
+                    "type": "audit",
+                    "overall_score": audit_summary["overall_score"],
+                    "overall_passed": audit_summary["overall_passed"],
+                    "audits": {
+                        k: {"passed": v["passed"], "score": v["score"]}
+                        for k, v in audit_summary["audits"].items()
+                    },
+                })
+            except Exception:
+                logger.exception(
+                    "Auto-audit failed for game %s", game_id
+                )
+
             yield _sse_event({
                 "type": "complete",
                 "game_code": final_game_code,
@@ -464,6 +484,25 @@ async def iterate_game(
                 final_game_code,
                 StepType.code,
             )
+
+            # Auto-run all audits after iteration completes
+            try:
+                from app.audits.orchestrator import run_all_audits
+
+                audit_summary = run_all_audits(final_game_code, game_id, db)
+                yield _sse_event({
+                    "type": "audit",
+                    "overall_score": audit_summary["overall_score"],
+                    "overall_passed": audit_summary["overall_passed"],
+                    "audits": {
+                        k: {"passed": v["passed"], "score": v["score"]}
+                        for k, v in audit_summary["audits"].items()
+                    },
+                })
+            except Exception:
+                logger.exception(
+                    "Auto-audit failed for game %s", game_id
+                )
 
             yield _sse_event({
                 "type": "complete",

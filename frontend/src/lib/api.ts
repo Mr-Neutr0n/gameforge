@@ -81,7 +81,8 @@ export interface SSEEvent {
     | "fix"
     | "complete"
     | "error"
-    | "progress";
+    | "progress"
+    | "audit";
   agent?: string;
   content?: string;
   filename?: string;
@@ -90,6 +91,21 @@ export interface SSEEvent {
   warnings?: string[];
   iteration?: number;
   game_code?: string;
+  overall_score?: number;
+  overall_passed?: boolean;
+  audits?: Record<string, { passed: boolean; score: number }>;
+}
+
+export interface AuditSummary {
+  overall_score: number;
+  overall_passed: boolean;
+  audits: Record<string, { passed: boolean; score: number; audit_id: string }>;
+}
+
+export interface PublicAuditSummary {
+  overall_score: number;
+  has_audits: boolean;
+  audits: Record<string, { passed: boolean; score: number }>;
 }
 
 // --- Error handling ---
@@ -379,8 +395,28 @@ export async function runAudit(
   });
 }
 
+export async function runAllAudits(
+  gameId: string,
+): Promise<AuditSummary> {
+  return request<AuditSummary>(`/api/games/${gameId}/audit/all`, {
+    method: "POST",
+  });
+}
+
 export async function getAuditResults(
   gameId: string,
 ): Promise<AuditResult[]> {
   return request<AuditResult[]>(`/api/games/${gameId}/audits`);
+}
+
+export async function getPublicAuditSummary(
+  gameId: string,
+): Promise<PublicAuditSummary> {
+  const res = await fetch(
+    `${API_URL}/api/games/${gameId}/audits/public`,
+  );
+  if (!res.ok) {
+    return { overall_score: 0, has_audits: false, audits: {} };
+  }
+  return res.json();
 }
