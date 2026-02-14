@@ -292,7 +292,8 @@ async def generate_game(
                 })
                 return
 
-            # Save the final game code to the database
+            # Save the final game code to the database BEFORE running audits,
+            # so a failing audit cannot lose the generated code.
             game_record = db.query(Game).filter(Game.id == game_id).first()
             if game_record:
                 game_record.game_code = final_game_code
@@ -305,10 +306,22 @@ async def generate_game(
                         captured_plan, body.prompt
                     )
 
-                db.commit()
+                try:
+                    db.commit()
+                except Exception:
+                    logger.exception(
+                        "Failed to save game code to DB for game %s", game_id
+                    )
+                    db.rollback()
+                    yield _sse_event({
+                        "type": "error",
+                        "message": "Failed to save game code. Please try again.",
+                    })
+                    return
 
-            # Auto-run all audits after generation completes
-            audit_summary = None
+            # Auto-run all audits after generation completes.
+            # Audits run independently — failures here do not affect the
+            # saved game code (already committed above).
             try:
                 from app.audits.orchestrator import run_all_audits
 
@@ -324,8 +337,9 @@ async def generate_game(
                 })
             except Exception:
                 logger.exception(
-                    "Auto-audit failed for game %s", game_id
+                    "Auto-audit failed for game %s — game code is safe", game_id
                 )
+                db.rollback()
 
             yield _sse_event({
                 "type": "complete",
@@ -577,24 +591,45 @@ async def iterate_game(
                 })
                 return
 
-            # Save the updated code to the database
+            # Save the updated code to the database BEFORE running audits,
+            # so a failing audit cannot lose the iterated code.
             game_record = db.query(Game).filter(Game.id == game_id).first()
             if game_record:
                 game_record.game_code = final_game_code
                 game_record.status = "completed"
                 game_record.updated_at = datetime.now(timezone.utc)
-                db.commit()
+                try:
+                    db.commit()
+                except Exception:
+                    logger.exception(
+                        "Failed to save iterated code to DB for game %s",
+                        game_id,
+                    )
+                    db.rollback()
+                    yield _sse_event({
+                        "type": "error",
+                        "message": "Failed to save updated game code. Please try again.",
+                    })
+                    return
 
-            # Save the code update as a conversation entry
-            _save_conversation(
-                db,
-                game_id,
-                ConversationRole.agent,
-                final_game_code,
-                StepType.code,
-            )
+            # Save the code update as a conversation entry (non-critical)
+            try:
+                _save_conversation(
+                    db,
+                    game_id,
+                    ConversationRole.agent,
+                    final_game_code,
+                    StepType.code,
+                )
+            except Exception:
+                logger.warning(
+                    "Failed to save conversation entry for game %s", game_id
+                )
+                db.rollback()
 
-            # Auto-run all audits after iteration completes
+            # Auto-run all audits after iteration completes.
+            # Audits run independently — failures here do not affect the
+            # saved game code (already committed above).
             try:
                 from app.audits.orchestrator import run_all_audits
 
@@ -610,8 +645,9 @@ async def iterate_game(
                 })
             except Exception:
                 logger.exception(
-                    "Auto-audit failed for game %s", game_id
+                    "Auto-audit failed for game %s — game code is safe", game_id
                 )
+                db.rollback()
 
             yield _sse_event({
                 "type": "complete",
