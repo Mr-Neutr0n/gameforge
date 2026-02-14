@@ -138,6 +138,21 @@ async def generate_game(
                 game_id=game_id,
                 template_type=body.template_type,
             ):
+                # Check for synthetic final code event from runner
+                if hasattr(event, "final_game_code"):
+                    code = event.final_game_code
+                    if code and final_game_code is None:
+                        final_game_code = code
+                        yield _sse_event({
+                            "type": "code",
+                            "filename": "game.js",
+                            "content": code,
+                        })
+                        _save_conversation(
+                            db, game_id, ConversationRole.agent, code, StepType.code
+                        )
+                    continue
+
                 # Extract agent name from the event
                 agent_name = getattr(event, "author", None) or "coordinator"
 
@@ -467,6 +482,18 @@ async def iterate_game(
                 existing_code=existing_code,
                 conversation_context=conversation_context,
             ):
+                # Check for synthetic final code event from runner
+                if hasattr(event, "final_game_code"):
+                    code = event.final_game_code
+                    if code and final_game_code is None:
+                        final_game_code = code
+                        yield _sse_event({
+                            "type": "code",
+                            "filename": "game.js",
+                            "content": code,
+                        })
+                    continue
+
                 agent_name = getattr(event, "author", None) or "iterator"
 
                 # Check for new progress messages in state

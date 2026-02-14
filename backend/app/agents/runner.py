@@ -122,13 +122,37 @@ async def run_game_generation(
     ):
         yield event
 
+    # After pipeline completes, read the final session state to get game code.
+    # This is the reliable fallback — state deltas in events may not always
+    # contain the game_files dict in the expected structure.
+    try:
+        session = session_service.get_session(
+            app_name=APP_NAME, user_id=user_id, session_id=session_id
+        )
+        if session and session.state:
+            game_files = session.state.get("game_files", {})
+            if isinstance(game_files, dict) and "game.js" in game_files:
+                # Yield a synthetic "final_code" event so generate.py can capture it
+                yield _FinalCodeEvent(game_files["game.js"])
+    except Exception:
+        logger.warning("Failed to read final session state for %s", session_id, exc_info=True)
+
     # Clean up the ADK session to free memory
     try:
-        await session_service.delete_session(
+        session_service.delete_session(
             app_name=APP_NAME, user_id=user_id, session_id=session_id
         )
     except Exception:
         logger.warning("Failed to delete ADK session %s", session_id, exc_info=True)
+
+
+class _FinalCodeEvent:
+    """Synthetic event carrying the final game code from session state."""
+    def __init__(self, code: str):
+        self.final_game_code = code
+        self.author = "coordinator"
+        self.actions = None
+        self.content = None
 
 
 async def run_game_iteration(
@@ -197,9 +221,21 @@ async def run_game_iteration(
     ):
         yield event
 
+    # Read final session state for the updated game code
+    try:
+        session = session_service.get_session(
+            app_name=f"{APP_NAME}-iterator", user_id=user_id, session_id=session_id
+        )
+        if session and session.state:
+            game_files = session.state.get("game_files", {})
+            if isinstance(game_files, dict) and "game.js" in game_files:
+                yield _FinalCodeEvent(game_files["game.js"])
+    except Exception:
+        logger.warning("Failed to read final session state for %s", session_id, exc_info=True)
+
     # Clean up the ADK session to free memory
     try:
-        await session_service.delete_session(
+        session_service.delete_session(
             app_name=f"{APP_NAME}-iterator", user_id=user_id, session_id=session_id
         )
     except Exception:
