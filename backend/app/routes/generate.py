@@ -34,9 +34,19 @@ class GenerateRequest(BaseModel):
     )
 
 
+class _SafeEncoder(json.JSONEncoder):
+    """JSON encoder that handles bytes and other non-serializable types."""
+    def default(self, o):
+        if isinstance(o, bytes):
+            return o.decode("utf-8", errors="replace")
+        if isinstance(o, set):
+            return list(o)
+        return super().default(o)
+
+
 def _sse_event(data: dict) -> str:
     """Format a dict as an SSE data line."""
-    return f"data: {json.dumps(data)}\n\n"
+    return f"data: {json.dumps(data, cls=_SafeEncoder)}\n\n"
 
 
 def _save_conversation(
