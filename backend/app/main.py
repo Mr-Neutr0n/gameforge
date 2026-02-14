@@ -1,8 +1,24 @@
+import json
 import logging
 import os
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
+
+# Monkey-patch the default JSON encoder to handle bytes objects.
+# ADK's internal telemetry (trace_call_llm) calls json.dumps() on LLM
+# request/response objects that may contain bytes from Gemini, causing
+# "Object of type bytes is not JSON serializable". This fixes it globally.
+_original_default = json.JSONEncoder.default
+
+def _patched_default(self, o):
+    if isinstance(o, bytes):
+        return o.decode("utf-8", errors="replace")
+    if isinstance(o, set):
+        return list(o)
+    return _original_default(self, o)
+
+json.JSONEncoder.default = _patched_default
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
