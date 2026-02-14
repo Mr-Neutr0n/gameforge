@@ -9,7 +9,7 @@ import re
 
 def _check_phaser_game_exists(code: str) -> dict:
     """Check that `new Phaser.Game` constructor is present."""
-    found = bool(re.search(r"new\s+Phaser\.Game\s*\(", code))
+    found = bool(re.search(r"new\s+Phaser\s*\.\s*Game\s*\(", code))
     return {
         "check": "phaser_game_constructor",
         "passed": found,
@@ -23,11 +23,11 @@ def _check_phaser_game_exists(code: str) -> dict:
 
 def _check_scene_exists(code: str) -> dict:
     """Check for at least one Phaser.Scene subclass or scene config object."""
-    # Match class extends Phaser.Scene
+    # Match class extends Phaser.Scene (flexible whitespace/newlines)
     class_scene = bool(
-        re.search(r"class\s+\w+\s+extends\s+Phaser\.Scene", code)
+        re.search(r"class\s+\w+\s+extends\s+Phaser\s*\.\s*Scene", code)
     )
-    # Match scene config objects: { key: '...', create: function ... }
+    # Match scene config objects: { key: '...', create: function/arrow ... }
     config_scene = bool(
         re.search(
             r"\{\s*key\s*:\s*['\"][\w]+['\"].*?create\s*[:(]",
@@ -35,7 +35,19 @@ def _check_scene_exists(code: str) -> dict:
             re.DOTALL,
         )
     )
-    found = class_scene or config_scene
+    # Match scene config array or scene property assignment
+    scene_config = bool(
+        re.search(r"scene\s*:\s*[\[\{]", code)
+        or re.search(r"scene\s*:\s*\w+", code)
+    )
+    # Match module export pattern
+    export_scene = bool(
+        re.search(
+            r"export\s+(?:default\s+)?class\s+\w+\s+extends\s+Phaser\s*\.\s*Scene",
+            code,
+        )
+    )
+    found = class_scene or config_scene or scene_config or export_scene
     return {
         "check": "scene_definition",
         "passed": found,
@@ -49,11 +61,15 @@ def _check_scene_exists(code: str) -> dict:
 
 def _check_create_method(code: str) -> dict:
     """Check that a create() method exists."""
-    # Match create() as a class method or as a function property
-    found = bool(
-        re.search(r"\bcreate\s*\(\s*\)\s*\{", code)
-        or re.search(r"create\s*:\s*function\s*\(", code)
-    )
+    # Match create() as a class method (with or without params),
+    # object property function, or arrow function
+    patterns = [
+        r"\bcreate\s*\([^)]*\)\s*\{",        # create() { or create(data) {
+        r"create\s*:\s*function\s*\(",         # create: function(
+        r"create\s*:\s*\([^)]*\)\s*=>",        # create: () => or create: (data) =>
+        r"create\s*:\s*\w+\s*=>",              # create: data =>
+    ]
+    found = any(re.search(p, code) for p in patterns)
     return {
         "check": "create_method",
         "passed": found,
@@ -67,10 +83,15 @@ def _check_create_method(code: str) -> dict:
 
 def _check_update_method(code: str) -> dict:
     """Check that an update() method exists."""
-    found = bool(
-        re.search(r"\bupdate\s*\([^)]*\)\s*\{", code)
-        or re.search(r"update\s*:\s*function\s*\(", code)
-    )
+    # Match update() as a class method (with or without params),
+    # object property function, or arrow function
+    patterns = [
+        r"\bupdate\s*\([^)]*\)\s*\{",         # update() { or update(time, delta) {
+        r"update\s*:\s*function\s*\(",          # update: function(
+        r"update\s*:\s*\([^)]*\)\s*=>",         # update: () => or update: (time) =>
+        r"update\s*:\s*\w+\s*=>",               # update: time =>
+    ]
+    found = any(re.search(p, code) for p in patterns)
     return {
         "check": "update_method",
         "passed": found,

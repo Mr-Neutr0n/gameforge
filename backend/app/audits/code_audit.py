@@ -36,8 +36,13 @@ def _check_no_eval(code: str) -> dict:
 
 def _check_no_var_declarations(code: str) -> dict:
     """Check that code uses let/const instead of var."""
-    # Match `var ` declarations — word boundary before, space after
-    var_matches = re.findall(r"\bvar\s+(\w+)", code)
+    # Strip single-line comments and string literals before checking,
+    # then match `var` followed by any whitespace (space, tab, newline)
+    # and an identifier.
+    cleaned = re.sub(r"//[^\n]*", "", code)          # remove // comments
+    cleaned = re.sub(r"/\*.*?\*/", "", cleaned, flags=re.DOTALL)  # remove /* */ comments
+    cleaned = re.sub(r"(['\"])(?:(?!\1).)*\1", '""', cleaned)     # neutralize strings
+    var_matches = re.findall(r"\bvar\s+(\w+)", cleaned)
 
     if var_matches:
         # Show up to 5 variable names for context
@@ -60,9 +65,9 @@ def _check_no_var_declarations(code: str) -> dict:
 
 def _check_scene_cleanup(code: str) -> dict:
     """Check that Phaser scenes have destroy() or shutdown cleanup logic."""
-    # Find scene classes
+    # Find scene classes (handle flexible whitespace between extends and Phaser.Scene)
     scene_classes = re.findall(
-        r"class\s+(\w+)\s+extends\s+Phaser\.Scene", code
+        r"class\s+(\w+)\s+extends\s+Phaser\s*\.\s*Scene", code
     )
 
     if not scene_classes:

@@ -84,22 +84,49 @@ def validate_phaser_config(code: str) -> dict:
     """
     errors: list[str] = []
 
-    if "new Phaser.Game" not in code and "Phaser.Game" not in code:
+    # Check for Phaser.Game constructor (handle optional whitespace around the dot)
+    if not re.search(r"Phaser\s*\.\s*Game", code):
         errors.append("Missing Phaser.Game constructor")
 
-    if not re.search(r"(preload|function\s+preload)", code):
+    # Match preload as: class method, object property function, or arrow function
+    preload_patterns = [
+        r"\bpreload\s*\([^)]*\)\s*\{",        # preload() { or preload(arg) {
+        r"preload\s*:\s*function\s*\(",         # preload: function(
+        r"preload\s*:\s*\([^)]*\)\s*=>",        # preload: () =>
+        r"preload\s*:\s*\w+\s*=>",              # preload: arg =>
+    ]
+    if not any(re.search(p, code) for p in preload_patterns):
         errors.append("Missing preload() method")
 
-    if not re.search(r"(create|function\s+create)", code):
+    # Match create as: class method, object property function, or arrow function
+    create_patterns = [
+        r"\bcreate\s*\([^)]*\)\s*\{",           # create() { or create(data) {
+        r"create\s*:\s*function\s*\(",           # create: function(
+        r"create\s*:\s*\([^)]*\)\s*=>",          # create: () =>
+        r"create\s*:\s*\w+\s*=>",                # create: data =>
+    ]
+    if not any(re.search(p, code) for p in create_patterns):
         errors.append("Missing create() method")
 
-    if not re.search(r"(update|function\s+update)", code):
+    # Match update as: class method, object property function, or arrow function
+    update_patterns = [
+        r"\bupdate\s*\([^)]*\)\s*\{",           # update() { or update(time, delta) {
+        r"update\s*:\s*function\s*\(",           # update: function(
+        r"update\s*:\s*\([^)]*\)\s*=>",          # update: () =>
+        r"update\s*:\s*\w+\s*=>",                # update: time =>
+    ]
+    if not any(re.search(p, code) for p in update_patterns):
         errors.append("Missing update() method")
 
-    scene_pattern = re.compile(
-        r"(class\s+\w+\s+extends\s+Phaser\.Scene|scene\s*:\s*[\[\{])"
-    )
-    if not scene_pattern.search(code):
+    # Match scene definitions: ES6 class (with flexible whitespace/newlines),
+    # scene config array/object, or module export patterns
+    scene_patterns = [
+        r"class\s+\w+\s+extends\s+Phaser\s*\.\s*Scene",  # class X extends Phaser.Scene
+        r"scene\s*:\s*[\[\{]",                              # scene: [ or scene: {
+        r"scene\s*:\s*\w+",                                 # scene: MyScene
+        r"export\s+(?:default\s+)?class\s+\w+\s+extends\s+Phaser\s*\.\s*Scene",  # module export
+    ]
+    if not any(re.search(p, code) for p in scene_patterns):
         errors.append("No Phaser.Scene subclass or scene config found")
 
     return {"valid": len(errors) == 0, "errors": errors}
