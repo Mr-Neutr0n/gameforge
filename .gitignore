@@ -7,3 +7,5 @@ __pycache__/
 venv/
 dist/
 .ralph/logs/
+playwright-report/
+test-results/
