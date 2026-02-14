@@ -19,10 +19,10 @@ const BASE_TEMPLATE = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GameForge Preview</title>
+<title>Game Builder Preview</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#09090b}
+html,body{width:100%;height:100%;overflow:hidden;background:#0f0e0b}
 #game-container{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
 #game-container canvas{display:block;max-width:100%;max-height:100%}
 </style>
@@ -188,7 +188,7 @@ export default function GamePreview({
       {/* Toolbar */}
       <div className="flex h-11 shrink-0 items-center justify-between border-b border-border-default px-3 sm:h-12 sm:px-4">
         <div className="flex items-center gap-2 sm:gap-3">
-          <h3 className="font-mono text-sm font-medium text-text-primary tracking-wide">GAME</h3>
+          <h3 className="text-sm font-medium text-text-primary">Game</h3>
           <span className="hidden items-center gap-1.5 rounded-full bg-surface-1 px-2 py-0.5 text-[10px] font-medium text-text-tertiary border border-border-default sm:inline-flex">
             <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
             Running
@@ -287,7 +287,6 @@ export default function GamePreview({
       <div className="relative flex-1 bg-surface-0 p-2 sm:p-3">
         <div
           className="relative h-full w-full overflow-hidden rounded-xl border border-border-hover"
-          style={{ boxShadow: "0 0 40px rgba(6, 182, 212, 0.08)" }}
         >
           {/* Loading overlay */}
           {loading && (
@@ -309,8 +308,6 @@ export default function GamePreview({
             title="Game Preview"
           />
 
-          {/* Scanline overlay */}
-          <div className="crt-scanlines absolute inset-0 z-[5]" />
         </div>
       </div>
 

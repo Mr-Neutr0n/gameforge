@@ -143,26 +143,20 @@ interface EventStyle {
 function getEventStyle(type: SSEEvent["type"], valid?: boolean): EventStyle {
   switch (type) {
     case "thinking":
-      return {
-        dotColor: "bg-blue-400",
-        lineColor: "border-blue-400/30",
-        label: "Plan",
-        labelBg: "bg-blue-400/10",
-        labelText: "text-blue-400",
-      };
     case "progress":
       return {
-        dotColor: "bg-blue-400",
-        lineColor: "border-blue-400/30",
-        label: "Progress",
-        labelBg: "bg-blue-400/10",
-        labelText: "text-blue-400",
+        dotColor: "bg-accent",
+        lineColor: "border-accent/30",
+        label: type === "thinking" ? "Plan" : "Progress",
+        labelBg: "bg-accent/10",
+        labelText: "text-accent",
       };
     case "code":
+    case "complete":
       return {
         dotColor: "bg-emerald-400",
         lineColor: "border-emerald-400/30",
-        label: "Code",
+        label: type === "code" ? "Code" : "Done",
         labelBg: "bg-emerald-400/10",
         labelText: "text-emerald-400",
       };
@@ -185,19 +179,11 @@ function getEventStyle(type: SSEEvent["type"], valid?: boolean): EventStyle {
       };
     case "fix":
       return {
-        dotColor: "bg-orange-400",
-        lineColor: "border-orange-400/30",
+        dotColor: "bg-amber-400",
+        lineColor: "border-amber-400/30",
         label: "Fix",
-        labelBg: "bg-orange-400/10",
-        labelText: "text-orange-400",
-      };
-    case "complete":
-      return {
-        dotColor: "bg-emerald-400",
-        lineColor: "border-emerald-400/30",
-        label: "Done",
-        labelBg: "bg-emerald-400/10",
-        labelText: "text-emerald-400",
+        labelBg: "bg-amber-400/10",
+        labelText: "text-amber-400",
       };
     case "error":
       return {
@@ -290,15 +276,14 @@ function getBorderColor(type: SSEEvent["type"], valid?: boolean): string {
   switch (type) {
     case "thinking":
     case "progress":
-      return "border-l-blue-500";
+      return "border-l-accent";
     case "code":
+    case "complete":
       return "border-l-emerald-500";
     case "validation":
-      return valid ? "border-l-green-500" : "border-l-red-500";
+      return valid ? "border-l-emerald-500" : "border-l-amber-500";
     case "fix":
-      return "border-l-orange-500";
-    case "complete":
-      return "border-l-cyan-500";
+      return "border-l-amber-500";
     case "error":
       return "border-l-red-500";
     default:
@@ -380,13 +365,10 @@ function PulsingDot() {
   return (
     <div className="relative flex gap-3 pb-0">
       <div className="flex flex-col items-center">
-        <div className="relative h-2.5 w-2.5">
-          <div className="absolute inset-0 rounded-full bg-accent animate-ping opacity-40" />
-          <div className="relative h-2.5 w-2.5 rounded-full bg-accent ring-2 ring-surface-0" />
-        </div>
+        <div className="h-2.5 w-2.5 rounded-full bg-accent ring-2 ring-surface-0" />
       </div>
       <div className="-mt-0.5">
-        <span className="text-xs text-text-tertiary animate-pulse">
+        <span className="text-xs text-text-tertiary">
           Working...
         </span>
       </div>
@@ -466,10 +448,7 @@ export default function ActivityFeed({
         <div className="flex items-center justify-between border-b border-border-default px-3 py-2 sm:px-4">
           <div className="flex items-center gap-2">
             {isGenerating && (
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
-              </span>
+              <span className="inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
             )}
             <span className="text-xs text-text-tertiary">
               {isGenerating ? "Generating" : "Complete"}

@@ -82,7 +82,7 @@ export default function GameMetadataEditor({
             onChange={(e) => handleDescriptionChange(e.target.value)}
             placeholder="Add a description for your game..."
             rows={2}
-            className="w-full resize-none rounded-lg border border-border-default bg-surface-1 px-3 py-2 text-sm text-text-primary placeholder:text-text-quaternary outline-none transition-colors duration-150 ease-in-out focus:border-accent/40"
+            className="w-full resize-none rounded-lg border border-border-default bg-surface-1 px-3 py-2 text-sm text-text-primary placeholder:text-text-quaternary outline-none transition-colors duration-150 ease-in-out focus:border-accent/50"
           />
         </div>
 

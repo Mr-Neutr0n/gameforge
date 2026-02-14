@@ -26,24 +26,6 @@ function formatDate(dateStr: string): string {
   });
 }
 
-const GAME_TYPE_COLORS: Record<string, string> = {
-  platformer: "#22d3ee",
-  shooter: "#a855f7",
-  topdown: "#3b82f6",
-  puzzle: "#f59e0b",
-  custom: "#737373",
-};
-
-function getGameColor(prompt: string | null): string {
-  if (!prompt) return GAME_TYPE_COLORS.custom;
-  const lower = prompt.toLowerCase();
-  if (lower.includes("platform") || lower.includes("jump")) return GAME_TYPE_COLORS.platformer;
-  if (lower.includes("shoot") || lower.includes("space") || lower.includes("blast")) return GAME_TYPE_COLORS.shooter;
-  if (lower.includes("dungeon") || lower.includes("top-down") || lower.includes("rpg") || lower.includes("explore")) return GAME_TYPE_COLORS.topdown;
-  if (lower.includes("puzzle") || lower.includes("match") || lower.includes("grid")) return GAME_TYPE_COLORS.puzzle;
-  return GAME_TYPE_COLORS.custom;
-}
-
 function GameCard({
   game,
   onClick,
@@ -53,7 +35,6 @@ function GameCard({
   onClick: () => void;
   onDelete: () => void;
 }) {
-  const color = getGameColor(game.prompt);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -71,7 +52,7 @@ function GameCard({
   }, [menuOpen]);
 
   return (
-    <div className="game-card-hover group relative flex flex-col overflow-hidden rounded-xl border border-border-default bg-surface-1 text-left transition-all duration-200 hover:border-border-hover hover:bg-surface-2">
+    <div className="group relative flex flex-col overflow-hidden rounded-xl border border-border-default bg-surface-1 text-left transition-all duration-150 hover:border-border-hover hover:bg-surface-2">
       {/* Menu button */}
       <div ref={menuRef} className="absolute right-2 top-2 z-10">
         <button
@@ -79,7 +60,7 @@ function GameCard({
             e.stopPropagation();
             setMenuOpen((prev) => !prev);
           }}
-          className="flex h-7 w-7 items-center justify-center rounded-lg bg-black/40 text-text-tertiary opacity-0 backdrop-blur-sm transition-all duration-150 hover:bg-black/60 hover:text-text-primary group-hover:opacity-100"
+          className="flex h-7 w-7 items-center justify-center rounded-lg bg-black/40 text-text-tertiary opacity-0 transition-all duration-150 hover:bg-black/60 hover:text-text-primary group-hover:opacity-100"
           aria-label="Game options"
         >
           <svg
@@ -151,25 +132,16 @@ function GameCard({
       {/* Clickable card area */}
       <button onClick={onClick} className="flex flex-1 flex-col text-left">
         {/* Thumbnail placeholder */}
-        <div
-          className="flex h-28 w-full items-center justify-center sm:h-36"
-          style={{ backgroundColor: `${color}06` }}
-        >
+        <div className="flex h-28 w-full items-center justify-center bg-surface-0 sm:h-36">
           {game.game_code ? (
             <div className="flex flex-col items-center gap-2">
-              <div
-                className="h-8 w-8 rounded-lg"
-                style={{ backgroundColor: `${color}25`, border: `2px solid ${color}50` }}
-              />
+              <div className="h-8 w-8 rounded-lg bg-surface-2 border border-border-default" />
               <div className="flex gap-1">
                 {[...Array(4)].map((_, i) => (
                   <div
                     key={i}
-                    className="h-1 rounded-full"
-                    style={{
-                      width: `${10 + i * 6}px`,
-                      backgroundColor: `${color}${i % 2 === 0 ? "30" : "18"}`,
-                    }}
+                    className="h-1 rounded-full bg-surface-2 border border-border-default"
+                    style={{ width: `${10 + i * 6}px` }}
                   />
                 ))}
               </div>
@@ -181,11 +153,11 @@ function GameCard({
                 height="20"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke={color}
+                stroke="currentColor"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                style={{ opacity: 0.4 }}
+                className="text-text-quaternary"
               >
                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
                 <line x1="8" y1="21" x2="16" y2="21" />
@@ -231,7 +203,7 @@ function DashboardSidebar({ gameCount }: { gameCount: number }) {
   return (
     <div className="flex h-full flex-col p-4">
       <div className="mb-4">
-        <h2 className="text-base font-semibold font-display text-text-primary">Dashboard</h2>
+        <h2 className="text-base font-semibold text-text-primary">Dashboard</h2>
         <p className="mt-1 text-xs text-text-tertiary">Your game library</p>
       </div>
 
@@ -297,7 +269,7 @@ function EmptyState({ onCreateGame }: { onCreateGame: () => void }) {
           </svg>
         </div>
         <div>
-          <h3 className="text-base font-semibold font-display text-text-primary">
+          <h3 className="text-base font-semibold text-text-primary">
             No games yet
           </h3>
           <p className="mt-1 text-sm text-text-tertiary">
@@ -306,7 +278,7 @@ function EmptyState({ onCreateGame }: { onCreateGame: () => void }) {
         </div>
         <button
           onClick={onCreateGame}
-          className="mt-2 flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-xs font-medium text-[var(--surface-0)] transition-all duration-150 hover:brightness-90"
+          className="mt-2 flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-xs font-medium text-[var(--surface-0)] transition-all duration-150 hover:bg-accent-hover"
         >
           <svg
             width="14"
@@ -467,14 +439,14 @@ function DashboardContent() {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border-default px-4 py-3 sm:px-6 sm:py-4">
           <div>
-            <h1 className="font-display text-lg font-semibold text-text-primary">My Games</h1>
+            <h1 className="text-lg font-semibold text-text-primary">My Games</h1>
             <p className="text-xs text-text-tertiary tabular-nums">
               {games.length} {games.length === 1 ? "game" : "games"}
             </p>
           </div>
           <button
             onClick={handleCreateGame}
-            className="flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-xs font-medium text-[var(--surface-0)] transition-all duration-150 hover:brightness-90"
+            className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-xs font-medium text-[var(--surface-0)] transition-all duration-150 hover:bg-accent-hover"
           >
             <svg
               width="14"

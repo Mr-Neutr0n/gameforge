@@ -14,7 +14,6 @@ interface Template {
   label: string;
   description: string;
   icon: React.ReactNode;
-  color: string;
   example: string;
 }
 
@@ -23,7 +22,6 @@ const TEMPLATES: Template[] = [
     id: "platformer",
     label: "Platformer",
     description: "Side-scrolling with jumping, platforms, and gravity",
-    color: "#22d3ee",
     example: "A blue square jumps across green platforms to reach the flag",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -39,7 +37,6 @@ const TEMPLATES: Template[] = [
     id: "topdown",
     label: "Top-Down",
     description: "Bird's-eye view with 4-directional movement and exploration",
-    color: "#3b82f6",
     example: "Explore a dungeon, avoid enemies, collect keys to unlock doors",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -56,7 +53,6 @@ const TEMPLATES: Template[] = [
     id: "shooter",
     label: "Shooter",
     description: "Space shooter with enemies, bullets, and scoring",
-    color: "#a855f7",
     example: "A spaceship shoots at waves of alien invaders from the bottom",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -74,7 +70,6 @@ const TEMPLATES: Template[] = [
     id: "puzzle",
     label: "Puzzle",
     description: "Grid-based with click interactions, matching, or clearing",
-    color: "#f59e0b",
     example: "A match-3 grid where you swap gems to clear rows and score points",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -94,7 +89,7 @@ function CreateSidebar() {
   return (
     <div className="flex h-full flex-col p-4">
       <div className="mb-4">
-        <h2 className="text-base font-semibold font-display text-text-primary">Create Game</h2>
+        <h2 className="text-base font-semibold text-text-primary">Create Game</h2>
         <p className="mt-1 text-xs text-text-tertiary">Describe your game idea</p>
       </div>
 
@@ -120,8 +115,8 @@ function CreateSidebar() {
 
         <div className="rounded-xl border border-border-default bg-surface-1 p-3">
           <div className="mb-2 flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-secondary-muted">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-secondary">
+            <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-accent-muted">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
               </svg>
             </div>
@@ -204,7 +199,7 @@ function CreateContent() {
       <div className="flex flex-1 flex-col overflow-y-auto">
         {/* Header */}
         <div className="border-b border-border-default px-4 py-3 sm:px-6 sm:py-4">
-          <h1 className="font-display text-lg font-semibold text-text-primary">New Game</h1>
+          <h1 className="text-lg font-semibold text-text-primary">New Game</h1>
           <p className="mt-0.5 text-xs text-text-tertiary">
             Describe your game and let AI build it
           </p>
@@ -228,7 +223,7 @@ function CreateContent() {
                 placeholder="Describe your game... e.g., A platformer where a red square jumps across moving platforms over a lava pit. Arrow keys to move and jump. Collect coins for points. 3 lives."
                 rows={5}
                 disabled={generating}
-                className="w-full resize-none rounded-lg border border-border-default bg-surface-1 px-4 py-3 text-sm text-text-primary placeholder:text-text-quaternary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 disabled:opacity-40 transition-colors duration-150 ease-in-out"
+                className="w-full resize-none rounded-lg border border-border-default bg-surface-1 px-4 py-3 text-sm text-text-primary placeholder:text-text-quaternary focus:border-accent/50 focus:outline-none disabled:opacity-40 transition-colors duration-150 ease-in-out"
               />
               <p className="text-xs text-text-tertiary">
                 Press{" "}
@@ -267,16 +262,13 @@ function CreateContent() {
                     >
                       {/* Selected indicator */}
                       {isSelected && (
-                        <div
-                          className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full"
-                          style={{ backgroundColor: template.color }}
-                        >
+                        <div className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-accent">
                           <svg
                             width="14"
                             height="14"
                             viewBox="0 0 24 24"
                             fill="none"
-                            stroke="#09090b"
+                            stroke="#0f0e0b"
                             strokeWidth="3"
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -288,11 +280,11 @@ function CreateContent() {
 
                       {/* Icon */}
                       <div
-                        className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-150"
-                        style={{
-                          backgroundColor: `${template.color}${isSelected ? "20" : "10"}`,
-                          color: template.color,
-                        }}
+                        className={`flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-150 ${
+                          isSelected
+                            ? "bg-accent-muted text-accent"
+                            : "bg-surface-2 text-text-tertiary"
+                        }`}
                       >
                         {template.icon}
                       </div>
@@ -349,7 +341,7 @@ function CreateContent() {
               <button
                 onClick={handleGenerate}
                 disabled={!canGenerate || generating}
-                className="flex items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-xs font-medium text-[var(--surface-0)] transition-all duration-150 hover:brightness-90 disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-xs font-medium text-[var(--surface-0)] transition-all duration-150 hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {generating ? (
                   <>

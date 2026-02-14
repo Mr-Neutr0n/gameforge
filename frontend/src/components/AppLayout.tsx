@@ -86,9 +86,8 @@ export default function AppLayout({ sidebar, children }: AppLayoutProps) {
 
           {/* Logo */}
           <a href="/dashboard" className="flex items-center gap-1.5">
-            <span className="font-display text-lg font-bold tracking-tight">
-              <span className="text-accent">Game</span>
-              <span className="text-secondary">Forge</span>
+            <span className="text-lg font-bold tracking-tight">
+              <span className="text-text-primary">Game Builder</span>
             </span>
           </a>
         </div>
@@ -131,7 +130,7 @@ export default function AppLayout({ sidebar, children }: AppLayoutProps) {
       <div className="relative flex flex-1 overflow-hidden">
         {/* Sidebar - desktop (persistent left panel) */}
         <aside
-          className={`hidden lg:flex w-80 shrink-0 flex-col border-r border-border-default bg-surface-0 transition-all duration-200 ${
+          className={`hidden lg:flex w-80 shrink-0 flex-col border-r border-border-default bg-surface-0 transition-all duration-150 ${
             sidebarOpen ? "lg:w-80" : "lg:w-0 lg:overflow-hidden lg:border-r-0"
           }`}
         >

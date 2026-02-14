@@ -66,7 +66,7 @@ export default function MessageInput({
           placeholder={placeholder}
           disabled={isDisabled}
           rows={1}
-          className="flex-1 resize-none rounded-lg border border-border-default bg-surface-1 px-3 py-2 text-sm text-text-primary placeholder:text-text-quaternary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150 ease-in-out"
+          className="flex-1 resize-none rounded-lg border border-border-default bg-surface-1 px-3 py-2 text-sm text-text-primary placeholder:text-text-quaternary focus:border-accent/50 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150 ease-in-out"
         />
         <button
           onClick={handleSend}

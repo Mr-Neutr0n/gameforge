@@ -6,7 +6,7 @@ export default function NotFound() {
       <div className="flex flex-col items-center gap-6 text-center">
         {/* 404 graphic */}
         <div className="flex items-center gap-3">
-          <span className="font-mono text-6xl font-bold text-accent sm:text-8xl">4</span>
+          <span className="font-mono text-6xl font-bold text-text-tertiary sm:text-8xl">4</span>
           <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border-default bg-surface-1 sm:h-20 sm:w-20">
             <svg
               width="20"
@@ -17,7 +17,7 @@ export default function NotFound() {
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="text-secondary"
+              className="text-text-tertiary"
             >
               <rect x="2" y="6" width="20" height="12" rx="2" />
               <path d="M6 12h4" />
@@ -26,12 +26,12 @@ export default function NotFound() {
               <circle cx="18" cy="13" r="1" />
             </svg>
           </div>
-          <span className="font-mono text-6xl font-bold text-accent sm:text-8xl">4</span>
+          <span className="font-mono text-6xl font-bold text-text-tertiary sm:text-8xl">4</span>
         </div>
 
         {/* Text */}
         <div>
-          <h1 className="text-lg font-semibold font-display text-text-primary sm:text-xl">
+          <h1 className="text-lg font-semibold text-text-primary sm:text-xl">
             Page not found
           </h1>
           <p className="mt-2 text-sm text-text-tertiary">
@@ -43,7 +43,7 @@ export default function NotFound() {
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-xs font-medium text-[var(--surface-0)] transition-all duration-150 hover:brightness-90"
+            className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-xs font-medium text-[var(--surface-0)] transition-all duration-150 hover:bg-accent-hover"
           >
             <svg
               width="14"
@@ -71,7 +71,7 @@ export default function NotFound() {
 
       {/* Footer */}
       <div className="absolute bottom-6">
-        <p className="text-xs text-text-quaternary">GameForge</p>
+        <p className="text-xs text-text-quaternary">Game Builder</p>
       </div>
     </div>
   );

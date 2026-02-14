@@ -510,7 +510,7 @@ function WorkspaceToolbar({
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="shrink-0 text-secondary"
+          className="shrink-0 text-accent"
         >
           <polygon
             points="5 3 19 12 5 21 5 3"
@@ -525,7 +525,7 @@ function WorkspaceToolbar({
             onChange={(e) => setEditTitle(e.target.value)}
             onBlur={handleTitleSubmit}
             onKeyDown={handleTitleKeyDown}
-            className="w-48 truncate rounded-lg border border-accent/40 bg-surface-1 px-1.5 py-0.5 text-sm font-medium text-text-primary outline-none focus:border-accent sm:w-64"
+            className="w-48 truncate rounded-lg border border-border-active bg-surface-1 px-1.5 py-0.5 text-sm font-medium text-text-primary outline-none focus:border-accent sm:w-64"
             maxLength={255}
           />
         ) : (
@@ -663,7 +663,7 @@ function GamePreviewEmpty({
     <div className="flex h-full flex-col">
       <div className="flex h-11 shrink-0 items-center border-b border-border-default px-3 sm:h-12 sm:px-4">
         <div className="flex items-center gap-2 sm:gap-3">
-          <h3 className="font-mono text-sm font-medium text-text-primary tracking-wide">GAME</h3>
+          <h3 className="text-sm font-medium text-text-primary">Game</h3>
           <span className="hidden items-center gap-1.5 rounded-full bg-surface-1 px-2 py-0.5 text-[10px] font-medium text-text-tertiary border border-border-default sm:inline-flex">
             <span className="h-1.5 w-1.5 rounded-full bg-text-tertiary" />
             Idle
@@ -671,18 +671,15 @@ function GamePreviewEmpty({
         </div>
       </div>
       <div className="relative flex flex-1 items-center justify-center bg-surface-0 p-3 sm:p-4">
-        {/* CRT scanline overlay */}
-        <div className="crt-scanlines absolute inset-0 z-[1]" />
-
-        <div className="relative z-[2] flex flex-col items-center gap-5 text-center">
+        <div className="flex flex-col items-center gap-5 text-center">
           {isGenerating ? (
             <>
               <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-surface-1 border border-border-default">
                 <div className="h-7 w-7 animate-spin rounded-full border-2 border-accent border-t-transparent" />
               </div>
               <div>
-                <p className="font-mono text-sm font-medium text-text-primary tracking-wide">
-                  LOADING...
+                <p className="text-sm font-medium text-text-primary">
+                  Loading...
                 </p>
                 <p className="mt-1 text-xs text-text-tertiary">
                   Watch the activity feed for progress
@@ -691,21 +688,33 @@ function GamePreviewEmpty({
             </>
           ) : (
             <>
-              <div className="flex flex-col items-center gap-3">
-                <p className="font-mono text-2xl font-bold text-accent tracking-widest sm:text-3xl">
-                  PRESS START
+              <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-surface-1 border border-border-default">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-text-tertiary"
+                >
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-text-primary">
+                  Ready to generate
                 </p>
-                <p className="font-mono text-sm text-text-tertiary">
-                  <span className="animate-blink inline-block">_</span>
+                <p className="mt-1 text-xs text-text-tertiary">
+                  Your game will appear here
                 </p>
               </div>
-              <p className="font-mono text-xs text-text-quaternary">
-                INSERT COIN TO CONTINUE
-              </p>
               {onGenerate && (
                 <button
                   onClick={onGenerate}
-                  className="mt-2 flex items-center gap-2 rounded-lg bg-forge-ember px-4 py-2 text-xs font-medium text-white transition-all duration-150 hover:brightness-90"
+                  className="mt-2 flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-xs font-medium text-[var(--surface-0)] transition-all duration-150 hover:bg-accent-hover"
                 >
                   <svg
                     width="14"

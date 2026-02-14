@@ -9,25 +9,21 @@ const EXAMPLE_GAMES = [
     title: "Neon Platformer",
     description: "Jump across floating platforms, dodge spikes, and collect glowing orbs.",
     type: "Platformer",
-    color: "#22d3ee",
   },
   {
     title: "Space Blaster",
     description: "Pilot a ship through asteroid fields and blast incoming enemies.",
     type: "Shooter",
-    color: "#a855f7",
   },
   {
     title: "Dungeon Crawler",
     description: "Explore tile-based dungeons, fight slimes, and find the exit.",
     type: "Top-Down",
-    color: "#3b82f6",
   },
   {
     title: "Gem Match",
     description: "Swap and match colorful gems in a grid to clear levels.",
     type: "Puzzle",
-    color: "#f59e0b",
   },
 ];
 
@@ -35,48 +31,31 @@ function GameCard({
   title,
   description,
   type,
-  color,
 }: {
   title: string;
   description: string;
   type: string;
-  color: string;
 }) {
   return (
-    <div className="game-card-hover group relative overflow-hidden rounded-xl border border-border-default bg-surface-1 p-4 transition-all duration-200 hover:border-border-hover hover:bg-surface-2 sm:p-6">
+    <div className="group relative overflow-hidden rounded-xl border border-border-default bg-surface-1 p-4 transition-all duration-150 hover:border-border-hover hover:bg-surface-2 sm:p-6">
       {/* Faux game preview */}
-      <div
-        className="mb-3 flex h-28 items-center justify-center rounded-lg sm:mb-4 sm:h-40"
-        style={{ backgroundColor: `${color}08` }}
-      >
+      <div className="mb-3 flex h-28 items-center justify-center rounded-lg bg-surface-2 sm:mb-4 sm:h-40">
         <div className="flex flex-col items-center gap-2">
-          <div
-            className="h-10 w-10 rounded-lg"
-            style={{ backgroundColor: `${color}30`, border: `2px solid ${color}60` }}
-          />
+          <div className="h-10 w-10 rounded-lg bg-surface-3 border border-border-default" />
           <div className="flex gap-1">
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className="h-1.5 rounded-full"
-                style={{
-                  width: `${12 + Math.random() * 20}px`,
-                  backgroundColor: `${color}${i % 2 === 0 ? "40" : "20"}`,
-                }}
+                className="h-1.5 rounded-full bg-surface-3"
+                style={{ width: `${12 + Math.random() * 20}px` }}
               />
             ))}
           </div>
-          <div
-            className="h-2 w-16 rounded-full"
-            style={{ backgroundColor: `${color}15` }}
-          />
+          <div className="h-2 w-16 rounded-full bg-surface-3" />
         </div>
       </div>
       <div className="flex items-center gap-2 mb-2">
-        <span
-          className="rounded-full px-2 py-0.5 text-[10px] font-medium"
-          style={{ backgroundColor: `${color}15`, color }}
-        >
+        <span className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-surface-2 border border-border-default text-text-secondary">
           {type}
         </span>
       </div>
@@ -143,9 +122,8 @@ export default function Home() {
     <main className="flex min-h-screen flex-col">
       {/* Nav */}
       <nav className="flex items-center justify-between px-4 py-4 sm:px-6 md:px-12">
-        <div className="font-display text-lg font-bold tracking-tight sm:text-xl">
-          <span className="text-accent">Game</span>
-          <span className="text-secondary">Forge</span>
+        <div className="text-lg font-bold tracking-tight text-text-primary sm:text-xl">
+          Game Builder
         </div>
         <button
           onClick={() => signIn()}
@@ -161,14 +139,14 @@ export default function Home() {
           <div className="rounded-full border border-border-default bg-surface-1 px-3 py-1 text-[10px] font-medium text-text-tertiary sm:px-4 sm:py-1.5 sm:text-xs">
             Powered by Gemini + Phaser.js
           </div>
-          <h1 className="font-display max-w-2xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl md:text-6xl">
+          <h1 className="max-w-2xl text-3xl font-bold leading-tight tracking-tight text-text-primary sm:text-4xl md:text-6xl">
             Describe a game,{" "}
-            <span className="bg-gradient-to-r from-accent to-secondary bg-clip-text text-transparent">
+            <span className="text-text-primary">
               play it in seconds
             </span>
           </h1>
           <p className="max-w-lg text-sm text-text-tertiary sm:text-base md:text-lg">
-            GameForge turns your ideas into playable browser games using AI
+            Game Builder turns your ideas into playable browser games using AI
             multi-agent orchestration. No code required.
           </p>
 
@@ -176,7 +154,7 @@ export default function Home() {
           <div className="mt-2 flex w-full max-w-sm flex-col gap-3 sm:mt-4 sm:w-auto sm:flex-row">
             <button
               onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-              className="flex items-center justify-center gap-2.5 rounded-lg bg-text-primary px-5 py-3 text-xs font-medium text-surface-0 transition-all duration-150 hover:brightness-90 sm:px-6"
+              className="flex items-center justify-center gap-2.5 rounded-lg bg-text-primary px-5 py-3 text-xs font-medium text-surface-0 transition-all duration-150 hover:bg-[#d4d1ca] sm:px-6"
             >
               <GoogleIcon />
               Continue with Google
@@ -195,7 +173,7 @@ export default function Home() {
       {/* Example games */}
       <section className="border-t border-border-default px-4 py-10 sm:px-6 sm:py-16 md:px-12">
         <div className="mx-auto max-w-5xl">
-          <h2 className="font-display mb-2 text-center text-xs font-medium uppercase tracking-widest text-text-tertiary sm:text-sm">
+          <h2 className="mb-2 text-center text-xs font-medium uppercase tracking-widest text-text-tertiary sm:text-sm">
             What you can build
           </h2>
           <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-4">
@@ -209,9 +187,8 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-border-default px-4 py-5 sm:px-6 sm:py-6 md:px-12">
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 sm:flex-row sm:justify-between">
-          <div className="font-display text-xs text-text-tertiary">
-            <span className="text-accent">Game</span>
-            <span className="text-secondary">Forge</span>
+          <div className="text-xs text-text-tertiary">
+            <span className="text-text-primary">Game Builder</span>
             <span className="ml-2">by harikp.com</span>
           </div>
           <div className="text-xs text-text-tertiary">

@@ -40,11 +40,11 @@ function getStepStyle(
 ): StepStyle {
   if (role === "user") {
     return {
-      dotColor: "bg-secondary",
-      lineColor: "border-secondary/30",
+      dotColor: "bg-accent",
+      lineColor: "border-accent/30",
       label: "You",
-      labelBg: "bg-secondary/10",
-      labelText: "text-secondary",
+      labelBg: "bg-accent/10",
+      labelText: "text-accent",
       icon: "user",
     };
   }

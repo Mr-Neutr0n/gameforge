@@ -130,7 +130,7 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
             href="/"
             className="rounded-lg bg-accent-muted px-4 py-2 text-xs font-medium text-accent border border-accent/20 transition-all duration-150 hover:bg-accent-subtle"
           >
-            Go to GameForge
+            Go to Game Builder
           </Link>
         </div>
       </div>
@@ -169,7 +169,7 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
             href="/"
             className="rounded-lg bg-accent-muted px-4 py-2 text-xs font-medium text-accent border border-accent/20 transition-all duration-150 hover:bg-accent-subtle"
           >
-            Go to GameForge
+            Go to Game Builder
           </Link>
         </div>
       </div>
@@ -186,7 +186,7 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
         {/* Exit fullscreen button */}
         <button
           onClick={toggleFullscreen}
-          className="fixed right-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-xl bg-surface-1/80 backdrop-blur-sm border border-border-default text-text-tertiary transition-all duration-150 hover:bg-surface-1 hover:text-text-primary"
+          className="fixed right-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-xl bg-surface-1/80 border border-border-default text-text-tertiary transition-all duration-150 hover:bg-surface-1 hover:text-text-primary"
           title="Exit fullscreen (Esc)"
         >
           <svg
@@ -231,7 +231,7 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
           </svg>
           <span className="text-sm font-semibold tracking-tight">
-            GameForge
+            Game Builder
           </span>
         </Link>
 
@@ -272,7 +272,7 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
         <div className="w-full shrink-0 border-t border-border-default lg:w-80 lg:border-l lg:border-t-0">
           <div className="p-5 sm:p-6">
             {/* Title */}
-            <h1 className="mb-2 text-lg font-semibold font-display text-text-primary leading-snug">
+            <h1 className="mb-2 text-lg font-semibold text-text-primary leading-snug">
               {title}
             </h1>
 
@@ -359,7 +359,7 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
             {/* Divider */}
             <div className="mb-5 border-t border-border-default" />
 
-            {/* Made with GameForge badge */}
+            {/* Made with Game Builder badge */}
             <Link
               href="/"
               className="flex items-center gap-2.5 rounded-xl bg-surface-1 p-3.5 border border-border-default transition-colors duration-150 ease-in-out hover:border-accent/20 hover:bg-surface-2"
@@ -381,7 +381,7 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
               </div>
               <div>
                 <p className="text-sm font-medium text-text-primary">
-                  Made with GameForge
+                  Made with Game Builder
                 </p>
                 <p className="text-xs text-text-tertiary">
                   Create your own game with AI

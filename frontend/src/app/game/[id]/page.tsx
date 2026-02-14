@@ -38,22 +38,22 @@ export async function generateMetadata({
   const description =
     game.description ||
     game.prompt ||
-    `A game created with GameForge by ${game.creator_name || "a creator"}`;
+    `A game created with Game Builder by ${game.creator_name || "a creator"}`;
   const gameUrl = `${SITE_URL}/game/${id}`;
 
   return {
     title,
     description,
     openGraph: {
-      title: `${title} — GameForge`,
+      title: `${title} — Game Builder`,
       description,
       type: "website",
       url: gameUrl,
-      siteName: "GameForge",
+      siteName: "Game Builder",
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} — GameForge`,
+      title: `${title} — Game Builder`,
       description,
     },
     alternates: {

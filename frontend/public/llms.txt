@@ -1,10 +1,10 @@
-# GameForge — AI Game Builder
+# Game Builder — AI Game Builder
 
 > Describe a game, play it in seconds.
 
-## What is GameForge?
+## What is Game Builder?
 
-GameForge is an AI-powered game builder that generates playable Phaser.js browser games from natural language descriptions. Users describe their game idea in plain text, and a multi-agent AI system plans, generates, validates, and fixes the game code automatically.
+Game Builder is an AI-powered game builder that generates playable Phaser.js browser games from natural language descriptions. Users describe their game idea in plain text, and a multi-agent AI system plans, generates, validates, and fixes the game code automatically.
 
 ## How it works
 
