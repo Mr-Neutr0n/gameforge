@@ -287,6 +287,26 @@ export async function deleteGame(id: string): Promise<void> {
   });
 }
 
+// --- SSE timeout constants ---
+
+const GENERATE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+const ITERATE_TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes
+
+/**
+ * Classify an SSE streaming error into a user-friendly message.
+ */
+function classifyStreamError(err: unknown, timeoutId: ReturnType<typeof setTimeout> | null): string {
+  if (err instanceof ApiError) return err.message;
+  if (err instanceof TypeError) return "Connection lost. Check your network and try again.";
+  if (err instanceof Error && err.name === "AbortError") {
+    // If the timeout already fired and cleared timeoutId, this was a timeout abort
+    return timeoutId === null
+      ? "Generation timed out. Please try again."
+      : "Request was cancelled.";
+  }
+  return "An unexpected error occurred. Please try again.";
+}
+
 // --- Generation (SSE streaming) ---
 
 export function streamGameGeneration(
@@ -299,6 +319,14 @@ export function streamGameGeneration(
   },
 ): AbortController {
   const controller = new AbortController();
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  // Set up automatic timeout
+  timeoutId = setTimeout(() => {
+    timeoutId = null; // Mark that the timeout fired
+    controller.abort();
+    callbacks.onError?.(new Error("Generation timed out. Please try again."));
+  }, GENERATE_TIMEOUT_MS);
 
   (async () => {
     try {
@@ -322,12 +350,14 @@ export function streamGameGeneration(
         } catch {
           // not JSON
         }
+        if (timeoutId) clearTimeout(timeoutId);
         callbacks.onError?.(new ApiError(res.status, message));
         return;
       }
 
       const reader = res.body?.getReader();
       if (!reader) {
+        if (timeoutId) clearTimeout(timeoutId);
         callbacks.onError?.(new Error("No response body"));
         return;
       }
@@ -349,6 +379,7 @@ export function streamGameGeneration(
 
           const jsonStr = trimmed.slice(6);
           if (jsonStr === "[DONE]") {
+            if (timeoutId) clearTimeout(timeoutId);
             callbacks.onComplete?.();
             return;
           }
@@ -362,10 +393,16 @@ export function streamGameGeneration(
         }
       }
 
+      if (timeoutId) clearTimeout(timeoutId);
       callbacks.onComplete?.();
     } catch (err) {
+      if (timeoutId) clearTimeout(timeoutId);
+      // If timeout already fired and called onError, don't double-report
+      if ((err as Error).name === "AbortError" && timeoutId === null) return;
+      // User-initiated abort (e.g. component unmount)
       if ((err as Error).name === "AbortError") return;
-      callbacks.onError?.(err as Error);
+      const message = classifyStreamError(err, timeoutId);
+      callbacks.onError?.(new Error(message));
     }
   })();
 
@@ -384,6 +421,14 @@ export function streamGameIteration(
   },
 ): AbortController {
   const controller = new AbortController();
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  // Set up automatic timeout
+  timeoutId = setTimeout(() => {
+    timeoutId = null; // Mark that the timeout fired
+    controller.abort();
+    callbacks.onError?.(new Error("Generation timed out. Please try again."));
+  }, ITERATE_TIMEOUT_MS);
 
   (async () => {
     try {
@@ -400,19 +445,21 @@ export function streamGameIteration(
       );
 
       if (!res.ok) {
-        let message = `Iteration failed with status ${res.status}`;
+        let errMessage = `Iteration failed with status ${res.status}`;
         try {
           const body = await res.json();
-          message = body.detail || body.message || message;
+          errMessage = body.detail || body.message || errMessage;
         } catch {
           // not JSON
         }
-        callbacks.onError?.(new ApiError(res.status, message));
+        if (timeoutId) clearTimeout(timeoutId);
+        callbacks.onError?.(new ApiError(res.status, errMessage));
         return;
       }
 
       const reader = res.body?.getReader();
       if (!reader) {
+        if (timeoutId) clearTimeout(timeoutId);
         callbacks.onError?.(new Error("No response body"));
         return;
       }
@@ -434,6 +481,7 @@ export function streamGameIteration(
 
           const jsonStr = trimmed.slice(6);
           if (jsonStr === "[DONE]") {
+            if (timeoutId) clearTimeout(timeoutId);
             callbacks.onComplete?.();
             return;
           }
@@ -447,10 +495,16 @@ export function streamGameIteration(
         }
       }
 
+      if (timeoutId) clearTimeout(timeoutId);
       callbacks.onComplete?.();
     } catch (err) {
+      if (timeoutId) clearTimeout(timeoutId);
+      // If timeout already fired and called onError, don't double-report
+      if ((err as Error).name === "AbortError" && timeoutId === null) return;
+      // User-initiated abort (e.g. component unmount)
       if ((err as Error).name === "AbortError") return;
-      callbacks.onError?.(err as Error);
+      const errMessage = classifyStreamError(err, timeoutId);
+      callbacks.onError?.(new Error(errMessage));
     }
   })();
 
