@@ -55,12 +55,12 @@ export default function ConfirmModal({
         if (e.target === overlayRef.current && !loading) onCancel();
       }}
     >
-      <div className="mx-4 w-full max-w-sm rounded-2xl border border-card-border bg-[#141414] p-6 shadow-2xl">
+      <div className="mx-4 w-full max-w-sm rounded-xl border border-border-default bg-surface-1 p-6 shadow-2xl">
         {/* Icon */}
         <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-red-500/10">
           <svg
-            width="18"
-            height="18"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -78,8 +78,8 @@ export default function ConfirmModal({
         </div>
 
         {/* Content */}
-        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-        <p className="mt-1.5 text-xs leading-relaxed text-muted">
+        <h3 className="text-sm font-semibold text-text-primary">{title}</h3>
+        <p className="mt-1.5 text-xs leading-relaxed text-text-tertiary">
           {description}
         </p>
 
@@ -88,7 +88,7 @@ export default function ConfirmModal({
           <button
             onClick={onCancel}
             disabled={loading}
-            className="rounded-lg px-3.5 py-2 text-xs font-medium text-muted transition-colors hover:bg-white/[0.04] hover:text-foreground disabled:opacity-50"
+            className="rounded-lg bg-surface-2 border border-border-default px-3 py-1.5 text-xs font-medium text-text-tertiary transition-all duration-150 hover:bg-surface-3 hover:border-border-hover hover:text-text-primary disabled:opacity-40"
           >
             {cancelLabel}
           </button>
@@ -96,10 +96,10 @@ export default function ConfirmModal({
             ref={confirmBtnRef}
             onClick={onConfirm}
             disabled={loading}
-            className={`flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-medium transition-colors disabled:opacity-50 ${
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-150 disabled:opacity-40 ${
               destructive
                 ? "bg-red-500/10 text-red-400 hover:bg-red-500/20"
-                : "bg-accent-cyan/10 text-accent-cyan hover:bg-accent-cyan/20"
+                : "bg-accent-muted text-accent hover:bg-accent-subtle"
             }`}
           >
             {loading && (

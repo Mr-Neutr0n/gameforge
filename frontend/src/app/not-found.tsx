@@ -2,22 +2,22 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-surface-0 px-6">
       <div className="flex flex-col items-center gap-6 text-center">
         {/* 404 graphic */}
         <div className="flex items-center gap-3">
-          <span className="font-mono text-6xl font-bold text-accent-cyan sm:text-8xl">4</span>
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-card-border bg-card sm:h-20 sm:w-20">
+          <span className="font-mono text-6xl font-bold text-accent sm:text-8xl">4</span>
+          <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border-default bg-surface-1 sm:h-20 sm:w-20">
             <svg
-              width="32"
-              height="32"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="text-accent-purple"
+              className="text-secondary"
             >
               <rect x="2" y="6" width="20" height="12" rx="2" />
               <path d="M6 12h4" />
@@ -26,15 +26,15 @@ export default function NotFound() {
               <circle cx="18" cy="13" r="1" />
             </svg>
           </div>
-          <span className="font-mono text-6xl font-bold text-accent-cyan sm:text-8xl">4</span>
+          <span className="font-mono text-6xl font-bold text-accent sm:text-8xl">4</span>
         </div>
 
         {/* Text */}
         <div>
-          <h1 className="text-lg font-semibold text-foreground sm:text-xl">
+          <h1 className="text-lg font-semibold font-display text-text-primary sm:text-xl">
             Page not found
           </h1>
-          <p className="mt-2 text-sm text-muted">
+          <p className="mt-2 text-sm text-text-tertiary">
             The page you&apos;re looking for doesn&apos;t exist or has been moved.
           </p>
         </div>
@@ -43,7 +43,7 @@ export default function NotFound() {
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="flex items-center gap-2 rounded-xl bg-accent-cyan px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
+            className="flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-xs font-medium text-[var(--surface-0)] transition-all duration-150 hover:brightness-90"
           >
             <svg
               width="14"
@@ -62,7 +62,7 @@ export default function NotFound() {
           </Link>
           <Link
             href="/dashboard"
-            className="rounded-xl border border-card-border bg-card px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.06]"
+            className="rounded-lg border border-border-default bg-surface-2 px-3 py-1.5 text-xs font-medium text-text-primary transition-all duration-150 hover:bg-surface-3 hover:border-border-hover"
           >
             Dashboard
           </Link>
@@ -71,7 +71,7 @@ export default function NotFound() {
 
       {/* Footer */}
       <div className="absolute bottom-6">
-        <p className="text-xs text-muted/60">GameForge</p>
+        <p className="text-xs text-text-quaternary">GameForge</p>
       </div>
     </div>
   );

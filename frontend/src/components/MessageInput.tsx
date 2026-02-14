@@ -56,7 +56,7 @@ export default function MessageInput({
   const isDisabled = isGenerating || !hasGameCode;
 
   return (
-    <div className="border-t border-card-border p-3 sm:p-4">
+    <div className="border-t border-border-default p-3 sm:p-4">
       <div className="flex items-end gap-2">
         <textarea
           ref={inputRef}
@@ -66,16 +66,16 @@ export default function MessageInput({
           placeholder={placeholder}
           disabled={isDisabled}
           rows={1}
-          className="flex-1 resize-none rounded-lg border border-card-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted/60 focus:border-accent-cyan focus:outline-none focus:ring-1 focus:ring-accent-cyan/30 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex-1 resize-none rounded-lg border border-border-default bg-surface-1 px-3 py-2 text-sm text-text-primary placeholder:text-text-quaternary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150 ease-in-out"
         />
         <button
           onClick={handleSend}
           disabled={!canSend}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-cyan/10 text-accent-cyan transition-colors hover:bg-accent-cyan/20 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-muted text-accent transition-colors duration-150 ease-in-out hover:bg-accent-subtle disabled:opacity-40 disabled:cursor-not-allowed"
           aria-label="Send message"
         >
           {isGenerating ? (
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent-cyan border-t-transparent" />
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent" />
           ) : (
             <svg
               width="16"
@@ -94,13 +94,13 @@ export default function MessageInput({
         </button>
       </div>
       {!isDisabled && (
-        <p className="mt-1.5 text-[10px] text-muted/60">
+        <p className="mt-1.5 text-[10px] text-text-quaternary">
           Press{" "}
-          <kbd className="rounded bg-card px-1 py-0.5 font-mono text-[10px] text-muted/60 border border-card-border">
+          <kbd className="rounded bg-surface-1 px-1 py-0.5 font-mono text-[10px] text-text-quaternary border border-border-default">
             Enter
           </kbd>{" "}
           to send,{" "}
-          <kbd className="rounded bg-card px-1 py-0.5 font-mono text-[10px] text-muted/60 border border-card-border">
+          <kbd className="rounded bg-surface-1 px-1 py-0.5 font-mono text-[10px] text-text-quaternary border border-border-default">
             Shift+Enter
           </kbd>{" "}
           for new line

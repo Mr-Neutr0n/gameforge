@@ -372,9 +372,9 @@ function WorkspaceSidebar({
   return (
     <div className="flex h-full flex-col">
       {/* Sidebar header */}
-      <div className="flex items-center justify-between border-b border-card-border p-3 sm:p-4">
-        <h2 className="text-sm font-semibold text-foreground">Activity</h2>
-        <span className="rounded-md bg-card px-2 py-0.5 font-mono text-xs text-muted">
+      <div className="flex items-center justify-between border-b border-border-default p-3 sm:p-4">
+        <h2 className="text-sm font-semibold text-text-primary">Activity</h2>
+        <span className="rounded-full bg-surface-1 px-2 py-0.5 font-mono text-[10px] font-medium text-text-tertiary">
           {gameId.slice(0, 8)}
         </span>
       </div>
@@ -394,7 +394,7 @@ function WorkspaceSidebar({
 
       {/* Error display */}
       {generateError && (
-        <div className="border-t border-card-border p-3 sm:p-4">
+        <div className="border-t border-border-default p-3 sm:p-4">
           <div className="flex items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2">
             <svg
               width="14"
@@ -498,8 +498,8 @@ function WorkspaceToolbar({
   };
 
   return (
-    <div className="flex h-10 shrink-0 items-center justify-between border-b border-card-border bg-background px-3 sm:px-4">
-      {/* Title — click to edit */}
+    <div className="flex h-10 shrink-0 items-center justify-between border-b border-border-default bg-surface-0 px-3 sm:px-4">
+      {/* Title -- click to edit */}
       <div className="flex items-center gap-2 overflow-hidden">
         <svg
           width="14"
@@ -510,7 +510,7 @@ function WorkspaceToolbar({
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="shrink-0 text-accent-purple"
+          className="shrink-0 text-secondary"
         >
           <polygon
             points="5 3 19 12 5 21 5 3"
@@ -525,7 +525,7 @@ function WorkspaceToolbar({
             onChange={(e) => setEditTitle(e.target.value)}
             onBlur={handleTitleSubmit}
             onKeyDown={handleTitleKeyDown}
-            className="w-48 truncate rounded border border-accent-cyan/40 bg-card px-1.5 py-0.5 text-sm font-medium text-foreground outline-none focus:border-accent-cyan sm:w-64"
+            className="w-48 truncate rounded-lg border border-accent/40 bg-surface-1 px-1.5 py-0.5 text-sm font-medium text-text-primary outline-none focus:border-accent sm:w-64"
             maxLength={255}
           />
         ) : (
@@ -534,19 +534,19 @@ function WorkspaceToolbar({
             className="group flex items-center gap-1.5 truncate"
             title="Click to edit title"
           >
-            <span className="truncate text-sm font-medium text-foreground">
+            <span className="truncate text-sm font-medium text-text-primary">
               {title || "Untitled Game"}
             </span>
             <svg
-              width="12"
-              height="12"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="shrink-0 text-muted opacity-0 transition-opacity group-hover:opacity-100"
+              className="shrink-0 text-text-tertiary opacity-0 transition-opacity group-hover:opacity-100"
             >
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -559,7 +559,7 @@ function WorkspaceToolbar({
           className={`hidden shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium sm:inline-flex ${
             isPublic
               ? "bg-green-500/10 text-green-400"
-              : "bg-white/[0.04] text-muted"
+              : "bg-surface-3 text-text-tertiary"
           }`}
         >
           {isPublic ? "Public" : "Private"}
@@ -571,16 +571,16 @@ function WorkspaceToolbar({
         {/* Metadata panel toggle */}
         <button
           onClick={onToggleMetadataPanel}
-          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors border ${
+          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors duration-150 ease-in-out border ${
             showMetadataPanel
-              ? "border-accent-cyan/30 bg-accent-cyan/10 text-accent-cyan"
-              : "border-card-border bg-card text-foreground hover:bg-white/[0.06]"
+              ? "border-accent/30 bg-accent-muted text-accent"
+              : "border-border-default bg-surface-1 text-text-primary hover:bg-surface-2 hover:border-border-hover"
           }`}
           title="Edit game details"
         >
           <svg
-            width="13"
-            height="13"
+            width="14"
+            height="14"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -595,7 +595,7 @@ function WorkspaceToolbar({
         </button>
 
         {/* Save status indicator */}
-        <span className="hidden text-xs text-muted sm:inline-flex items-center gap-1.5">
+        <span className="hidden text-xs text-text-tertiary sm:inline-flex items-center gap-1.5">
           {isSaving ? (
             <>
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-yellow-400" />
@@ -618,7 +618,7 @@ function WorkspaceToolbar({
         <button
           onClick={onSave}
           disabled={isSaving || !hasUnsavedChanges}
-          className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-card border border-card-border text-foreground hover:bg-white/[0.06]"
+          className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed bg-surface-2 border border-border-default text-text-primary hover:bg-surface-3 hover:border-border-hover"
           title={
             isSaving
               ? "Saving..."
@@ -628,11 +628,11 @@ function WorkspaceToolbar({
           }
         >
           {isSaving ? (
-            <div className="h-3 w-3 animate-spin rounded-full border border-muted border-t-foreground" />
+            <div className="h-3 w-3 animate-spin rounded-full border border-text-tertiary border-t-text-primary" />
           ) : (
             <svg
-              width="13"
-              height="13"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -661,30 +661,30 @@ function GamePreviewEmpty({
 }) {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-11 shrink-0 items-center border-b border-card-border px-3 sm:h-12 sm:px-4">
+      <div className="flex h-11 shrink-0 items-center border-b border-border-default px-3 sm:h-12 sm:px-4">
         <div className="flex items-center gap-2 sm:gap-3">
-          <h3 className="font-mono text-sm font-medium text-foreground tracking-wide">GAME</h3>
-          <span className="hidden items-center gap-1.5 rounded-md bg-card px-2 py-0.5 text-xs text-muted border border-card-border sm:inline-flex">
-            <span className="h-1.5 w-1.5 rounded-full bg-muted" />
+          <h3 className="font-mono text-sm font-medium text-text-primary tracking-wide">GAME</h3>
+          <span className="hidden items-center gap-1.5 rounded-full bg-surface-1 px-2 py-0.5 text-[10px] font-medium text-text-tertiary border border-border-default sm:inline-flex">
+            <span className="h-1.5 w-1.5 rounded-full bg-text-tertiary" />
             Idle
           </span>
         </div>
       </div>
-      <div className="relative flex flex-1 items-center justify-center bg-[#0a0a0a] p-3 sm:p-4">
+      <div className="relative flex flex-1 items-center justify-center bg-surface-0 p-3 sm:p-4">
         {/* CRT scanline overlay */}
         <div className="crt-scanlines absolute inset-0 z-[1]" />
 
         <div className="relative z-[2] flex flex-col items-center gap-5 text-center">
           {isGenerating ? (
             <>
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-card border border-card-border">
-                <div className="h-7 w-7 animate-spin rounded-full border-2 border-accent-cyan border-t-transparent" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-surface-1 border border-border-default">
+                <div className="h-7 w-7 animate-spin rounded-full border-2 border-accent border-t-transparent" />
               </div>
               <div>
-                <p className="font-mono text-sm font-medium text-foreground tracking-wide">
+                <p className="font-mono text-sm font-medium text-text-primary tracking-wide">
                   LOADING...
                 </p>
-                <p className="mt-1 text-xs text-muted">
+                <p className="mt-1 text-xs text-text-tertiary">
                   Watch the activity feed for progress
                 </p>
               </div>
@@ -692,20 +692,20 @@ function GamePreviewEmpty({
           ) : (
             <>
               <div className="flex flex-col items-center gap-3">
-                <p className="font-mono text-2xl font-bold text-accent-cyan tracking-widest sm:text-3xl">
+                <p className="font-mono text-2xl font-bold text-accent tracking-widest sm:text-3xl">
                   PRESS START
                 </p>
-                <p className="font-mono text-sm text-muted">
+                <p className="font-mono text-sm text-text-tertiary">
                   <span className="animate-blink inline-block">_</span>
                 </p>
               </div>
-              <p className="font-mono text-xs text-muted/60">
+              <p className="font-mono text-xs text-text-quaternary">
                 INSERT COIN TO CONTINUE
               </p>
               {onGenerate && (
                 <button
                   onClick={onGenerate}
-                  className="mt-2 flex items-center gap-2 rounded-xl bg-forge-ember px-5 py-2.5 text-sm font-medium text-white transition-all hover:opacity-90"
+                  className="mt-2 flex items-center gap-2 rounded-lg bg-forge-ember px-4 py-2 text-xs font-medium text-white transition-all duration-150 hover:brightness-90"
                 >
                   <svg
                     width="14"

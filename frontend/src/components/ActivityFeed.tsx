@@ -144,19 +144,19 @@ function getEventStyle(type: SSEEvent["type"], valid?: boolean): EventStyle {
   switch (type) {
     case "thinking":
       return {
-        dotColor: "bg-accent-blue",
-        lineColor: "border-accent-blue/30",
+        dotColor: "bg-blue-400",
+        lineColor: "border-blue-400/30",
         label: "Plan",
-        labelBg: "bg-accent-blue/10",
-        labelText: "text-accent-blue",
+        labelBg: "bg-blue-400/10",
+        labelText: "text-blue-400",
       };
     case "progress":
       return {
-        dotColor: "bg-accent-blue",
-        lineColor: "border-accent-blue/30",
+        dotColor: "bg-blue-400",
+        lineColor: "border-blue-400/30",
         label: "Progress",
-        labelBg: "bg-accent-blue/10",
-        labelText: "text-accent-blue",
+        labelBg: "bg-blue-400/10",
+        labelText: "text-blue-400",
       };
     case "code":
       return {
@@ -209,11 +209,11 @@ function getEventStyle(type: SSEEvent["type"], valid?: boolean): EventStyle {
       };
     default:
       return {
-        dotColor: "bg-muted",
-        lineColor: "border-muted/30",
+        dotColor: "bg-text-tertiary",
+        lineColor: "border-text-tertiary/30",
         label: "Event",
-        labelBg: "bg-muted/10",
-        labelText: "text-muted",
+        labelBg: "bg-text-tertiary/10",
+        labelText: "text-text-tertiary",
       };
   }
 }
@@ -227,12 +227,12 @@ function ExpandableContent({ content }: { content: string }) {
     <div className="mt-1.5">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="text-xs text-muted hover:text-foreground transition-colors"
+        className="text-xs text-text-tertiary hover:text-text-primary transition-colors duration-150 ease-in-out"
       >
         {expanded ? "Hide details" : "Show details"}
       </button>
       {expanded && (
-        <pre className="mt-1.5 overflow-x-auto rounded-md bg-[#0a0a0a] border border-card-border p-2 font-mono text-xs text-muted leading-relaxed max-h-48 overflow-y-auto">
+        <pre className="mt-1.5 overflow-x-auto rounded-lg bg-surface-0 border border-border-default p-2 font-mono text-xs text-text-tertiary leading-relaxed max-h-48 overflow-y-auto">
           {content}
         </pre>
       )}
@@ -256,7 +256,7 @@ function ValidationDetails({
     <div className="mt-1.5">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="text-xs text-muted hover:text-foreground transition-colors"
+        className="text-xs text-text-tertiary hover:text-text-primary transition-colors duration-150 ease-in-out"
       >
         {expanded ? "Hide details" : "Show details"}
       </button>
@@ -315,7 +315,7 @@ function TimelineItem({ item }: { item: ActivityItem }) {
       {/* Timeline line */}
       <div className="flex flex-col items-center">
         <div
-          className={`h-2.5 w-2.5 shrink-0 rounded-full ${style.dotColor} ring-2 ring-background`}
+          className={`h-2.5 w-2.5 shrink-0 rounded-full ${style.dotColor} ring-2 ring-surface-0`}
         />
         <div className={`w-px flex-1 border-l ${style.lineColor}`} />
       </div>
@@ -324,17 +324,17 @@ function TimelineItem({ item }: { item: ActivityItem }) {
       <div className="min-w-0 flex-1 -mt-0.5">
         <div className="flex items-center gap-2 flex-wrap">
           <span
-            className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium ${style.labelBg} ${style.labelText}`}
+            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${style.labelBg} ${style.labelText}`}
           >
             {style.label}
           </span>
           {item.agent && (
-            <span className="text-[10px] text-muted font-mono">
+            <span className="text-[10px] text-text-tertiary font-mono">
               {agentDisplayName(item.agent)}
             </span>
           )}
         </div>
-        <p className="mt-1 text-xs text-foreground/80 leading-relaxed">
+        <p className="mt-1 text-xs text-text-primary/80 leading-relaxed">
           {item.summary}
         </p>
 
@@ -381,12 +381,12 @@ function PulsingDot() {
     <div className="relative flex gap-3 pb-0">
       <div className="flex flex-col items-center">
         <div className="relative h-2.5 w-2.5">
-          <div className="absolute inset-0 rounded-full bg-accent-cyan animate-ping opacity-40" />
-          <div className="relative h-2.5 w-2.5 rounded-full bg-accent-cyan ring-2 ring-background" />
+          <div className="absolute inset-0 rounded-full bg-accent animate-ping opacity-40" />
+          <div className="relative h-2.5 w-2.5 rounded-full bg-accent ring-2 ring-surface-0" />
         </div>
       </div>
       <div className="-mt-0.5">
-        <span className="text-xs text-muted animate-pulse">
+        <span className="text-xs text-text-tertiary animate-pulse">
           Working...
         </span>
       </div>
@@ -431,7 +431,7 @@ export default function ActivityFeed({
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-card border border-card-border">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-surface-1 border border-border-default">
             <svg
               width="20"
               height="20"
@@ -439,7 +439,7 @@ export default function ActivityFeed({
               fill="none"
               stroke="currentColor"
               strokeWidth="1.5"
-              className="text-muted"
+              className="text-text-tertiary"
             >
               <path
                 d="M12 8v4l3 3"
@@ -449,7 +449,7 @@ export default function ActivityFeed({
               <circle cx="12" cy="12" r="10" />
             </svg>
           </div>
-          <p className="text-sm text-muted">
+          <p className="text-sm text-text-tertiary">
             Activity will appear here
             <br />
             once generation starts
@@ -463,20 +463,20 @@ export default function ActivityFeed({
     <div className="flex h-full flex-col">
       {/* Timer bar */}
       {(isGenerating || items.length > 0) && (
-        <div className="flex items-center justify-between border-b border-card-border px-3 py-2 sm:px-4">
+        <div className="flex items-center justify-between border-b border-border-default px-3 py-2 sm:px-4">
           <div className="flex items-center gap-2">
             {isGenerating && (
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent-cyan opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-accent-cyan" />
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
               </span>
             )}
-            <span className="text-xs text-muted">
+            <span className="text-xs text-text-tertiary">
               {isGenerating ? "Generating" : "Complete"}
             </span>
           </div>
           {startTime && (
-            <span className="font-mono text-xs text-muted">
+            <span className="font-mono text-xs text-text-tertiary tabular-nums">
               {formatElapsed(elapsed)}
             </span>
           )}

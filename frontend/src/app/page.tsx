@@ -43,10 +43,10 @@ function GameCard({
   color: string;
 }) {
   return (
-    <div className="game-card-hover group relative overflow-hidden rounded-xl border border-card-border bg-card p-4 transition-all hover:border-white/10 hover:bg-white/[0.03] sm:rounded-2xl sm:p-6">
+    <div className="game-card-hover group relative overflow-hidden rounded-xl border border-border-default bg-surface-1 p-4 transition-all duration-200 hover:border-border-hover hover:bg-surface-2 sm:p-6">
       {/* Faux game preview */}
       <div
-        className="mb-3 flex h-28 items-center justify-center rounded-lg sm:mb-4 sm:h-40 sm:rounded-xl"
+        className="mb-3 flex h-28 items-center justify-center rounded-lg sm:mb-4 sm:h-40"
         style={{ backgroundColor: `${color}08` }}
       >
         <div className="flex flex-col items-center gap-2">
@@ -74,14 +74,14 @@ function GameCard({
       </div>
       <div className="flex items-center gap-2 mb-2">
         <span
-          className="rounded-md px-2 py-0.5 text-xs font-medium"
+          className="rounded-full px-2 py-0.5 text-[10px] font-medium"
           style={{ backgroundColor: `${color}15`, color }}
         >
           {type}
         </span>
       </div>
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-      <p className="mt-1 text-xs text-muted leading-relaxed">{description}</p>
+      <h3 className="text-sm font-semibold text-text-primary">{title}</h3>
+      <p className="mt-1 text-xs text-text-tertiary leading-relaxed">{description}</p>
     </div>
   );
 }
@@ -130,7 +130,7 @@ export default function Home() {
   if (status === "loading") {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent-cyan border-t-transparent" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
       </main>
     );
   }
@@ -144,12 +144,12 @@ export default function Home() {
       {/* Nav */}
       <nav className="flex items-center justify-between px-4 py-4 sm:px-6 md:px-12">
         <div className="font-display text-lg font-bold tracking-tight sm:text-xl">
-          <span className="text-accent-cyan">Game</span>
-          <span className="text-accent-purple">Forge</span>
+          <span className="text-accent">Game</span>
+          <span className="text-secondary">Forge</span>
         </div>
         <button
           onClick={() => signIn()}
-          className="rounded-lg border border-card-border bg-card px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-white/[0.06] sm:px-4 sm:py-2"
+          className="rounded-lg border border-border-default bg-surface-1 px-3 py-1.5 text-xs font-medium text-text-primary transition-colors duration-150 ease-in-out hover:bg-surface-2 hover:border-border-hover sm:px-4 sm:py-2"
         >
           Sign in
         </button>
@@ -158,16 +158,16 @@ export default function Home() {
       {/* Hero */}
       <section className="flex flex-1 flex-col items-center justify-center px-4 pb-12 pt-10 sm:px-6 sm:pb-16 sm:pt-12 md:pt-20">
         <div className="flex flex-col items-center gap-5 text-center sm:gap-6">
-          <div className="rounded-full border border-card-border bg-card px-3 py-1 text-[11px] font-medium text-muted sm:px-4 sm:py-1.5 sm:text-xs">
+          <div className="rounded-full border border-border-default bg-surface-1 px-3 py-1 text-[10px] font-medium text-text-tertiary sm:px-4 sm:py-1.5 sm:text-xs">
             Powered by Gemini + Phaser.js
           </div>
           <h1 className="font-display max-w-2xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl md:text-6xl">
             Describe a game,{" "}
-            <span className="bg-gradient-to-r from-accent-cyan to-accent-purple bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-accent to-secondary bg-clip-text text-transparent">
               play it in seconds
             </span>
           </h1>
-          <p className="max-w-lg text-sm text-muted sm:text-base md:text-lg">
+          <p className="max-w-lg text-sm text-text-tertiary sm:text-base md:text-lg">
             GameForge turns your ideas into playable browser games using AI
             multi-agent orchestration. No code required.
           </p>
@@ -176,14 +176,14 @@ export default function Home() {
           <div className="mt-2 flex w-full max-w-sm flex-col gap-3 sm:mt-4 sm:w-auto sm:flex-row">
             <button
               onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-              className="flex items-center justify-center gap-2.5 rounded-xl bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90 sm:px-6"
+              className="flex items-center justify-center gap-2.5 rounded-lg bg-text-primary px-5 py-3 text-xs font-medium text-surface-0 transition-all duration-150 hover:brightness-90 sm:px-6"
             >
               <GoogleIcon />
               Continue with Google
             </button>
             <button
               onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
-              className="flex items-center justify-center gap-2.5 rounded-xl border border-card-border bg-card px-5 py-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.06] sm:px-6"
+              className="flex items-center justify-center gap-2.5 rounded-lg border border-border-default bg-surface-1 px-5 py-3 text-xs font-medium text-text-primary transition-colors duration-150 ease-in-out hover:bg-surface-2 hover:border-border-hover sm:px-6"
             >
               <GitHubIcon />
               Continue with GitHub
@@ -193,9 +193,9 @@ export default function Home() {
       </section>
 
       {/* Example games */}
-      <section className="border-t border-card-border px-4 py-10 sm:px-6 sm:py-16 md:px-12">
+      <section className="border-t border-border-default px-4 py-10 sm:px-6 sm:py-16 md:px-12">
         <div className="mx-auto max-w-5xl">
-          <h2 className="font-display mb-2 text-center text-xs font-medium uppercase tracking-widest text-muted sm:text-sm">
+          <h2 className="font-display mb-2 text-center text-xs font-medium uppercase tracking-widest text-text-tertiary sm:text-sm">
             What you can build
           </h2>
           <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-4">
@@ -207,14 +207,14 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-card-border px-4 py-5 sm:px-6 sm:py-6 md:px-12">
+      <footer className="border-t border-border-default px-4 py-5 sm:px-6 sm:py-6 md:px-12">
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 sm:flex-row sm:justify-between">
-          <div className="font-display text-xs text-muted">
-            <span className="text-accent-cyan">Game</span>
-            <span className="text-accent-purple">Forge</span>
+          <div className="font-display text-xs text-text-tertiary">
+            <span className="text-accent">Game</span>
+            <span className="text-secondary">Forge</span>
             <span className="ml-2">by harikp.com</span>
           </div>
-          <div className="text-xs text-muted">
+          <div className="text-xs text-text-tertiary">
             Built with Next.js, FastAPI &amp; Google ADK
           </div>
         </div>

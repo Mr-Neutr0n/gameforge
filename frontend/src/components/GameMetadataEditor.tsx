@@ -52,26 +52,26 @@ export default function GameMetadataEditor({
   }, []);
 
   return (
-    <div className="shrink-0 border-b border-card-border bg-background">
+    <div className="shrink-0 border-b border-border-default bg-surface-0">
       <div className="flex flex-col gap-3 px-3 py-3 sm:flex-row sm:items-start sm:gap-4 sm:px-4">
         {/* Description */}
         <div className="flex flex-1 flex-col gap-1.5">
           <div className="flex items-center gap-2">
             <label
               htmlFor="game-description"
-              className="text-xs font-medium text-muted"
+              className="text-xs font-medium text-text-tertiary"
             >
               Description
             </label>
             {isSavingDescription && (
-              <span className="flex items-center gap-1 text-[10px] text-muted">
-                <span className="h-1 w-1 animate-pulse rounded-full bg-yellow-400" />
+              <span className="flex items-center gap-1 text-[10px] text-text-tertiary">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-yellow-400" />
                 Saving...
               </span>
             )}
             {!isSavingDescription && !descriptionDirty && description && (
               <span className="flex items-center gap-1 text-[10px] text-green-400">
-                <span className="h-1 w-1 rounded-full bg-green-400" />
+                <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
                 Saved
               </span>
             )}
@@ -82,27 +82,27 @@ export default function GameMetadataEditor({
             onChange={(e) => handleDescriptionChange(e.target.value)}
             placeholder="Add a description for your game..."
             rows={2}
-            className="w-full resize-none rounded-lg border border-card-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted/50 outline-none transition-colors focus:border-accent-cyan/40"
+            className="w-full resize-none rounded-lg border border-border-default bg-surface-1 px-3 py-2 text-sm text-text-primary placeholder:text-text-quaternary outline-none transition-colors duration-150 ease-in-out focus:border-accent/40"
           />
         </div>
 
         {/* Visibility toggle */}
         <div className="flex flex-col gap-1.5 sm:w-44">
-          <label className="text-xs font-medium text-muted">Visibility</label>
-          <div className="flex rounded-lg border border-card-border bg-card">
+          <label className="text-xs font-medium text-text-tertiary">Visibility</label>
+          <div className="flex rounded-lg border border-border-default bg-surface-1">
             <button
               onClick={() => {
                 if (isPublic) onVisibilityChange(false);
               }}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-l-lg px-3 py-2 text-xs font-medium transition-colors ${
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-l-lg px-3 py-2 text-xs font-medium transition-colors duration-150 ease-in-out ${
                 !isPublic
-                  ? "bg-white/[0.06] text-foreground"
-                  : "text-muted hover:text-foreground"
+                  ? "bg-surface-3 text-text-primary"
+                  : "text-text-tertiary hover:text-text-primary"
               }`}
             >
               <svg
-                width="12"
-                height="12"
+                width="14"
+                height="14"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -119,15 +119,15 @@ export default function GameMetadataEditor({
               onClick={() => {
                 if (!isPublic) onVisibilityChange(true);
               }}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-r-lg px-3 py-2 text-xs font-medium transition-colors ${
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-r-lg px-3 py-2 text-xs font-medium transition-colors duration-150 ease-in-out ${
                 isPublic
                   ? "bg-green-500/10 text-green-400"
-                  : "text-muted hover:text-foreground"
+                  : "text-text-tertiary hover:text-text-primary"
               }`}
             >
               <svg
-                width="12"
-                height="12"
+                width="14"
+                height="14"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -142,7 +142,7 @@ export default function GameMetadataEditor({
               Public
             </button>
           </div>
-          <p className="text-[10px] text-muted/70">
+          <p className="text-[10px] text-text-quaternary">
             {isPublic
               ? "Anyone with the link can play this game"
               : "Only you can access this game"}

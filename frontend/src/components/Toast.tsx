@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 
-// ── Types ──────────────────────────────────────────────────────────────
+// -- Types --
 
 type ToastType = "error" | "success" | "info";
 
@@ -22,13 +22,13 @@ interface ToastContextValue {
   showToast: (message: string, type?: ToastType) => void;
 }
 
-// ── Context ────────────────────────────────────────────────────────────
+// -- Context --
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
 let nextId = 0;
 
-// ── Provider ───────────────────────────────────────────────────────────
+// -- Provider --
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -51,7 +51,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={{ showToast }}>
       {children}
 
-      {/* Toast container — bottom-right */}
+      {/* Toast container -- bottom-right */}
       {toasts.length > 0 && (
         <div className="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 sm:bottom-6 sm:right-6">
           {toasts.map((toast) => (
@@ -63,7 +63,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// ── Toast item ─────────────────────────────────────────────────────────
+// -- Toast item --
 
 const STYLES: Record<ToastType, { bg: string; border: string; text: string; icon: ReactNode }> = {
   error: {
@@ -90,9 +90,9 @@ const STYLES: Record<ToastType, { bg: string; border: string; text: string; icon
     ),
   },
   info: {
-    bg: "bg-accent-cyan/10",
-    border: "border-accent-cyan/20",
-    text: "text-accent-cyan",
+    bg: "bg-accent-muted",
+    border: "border-accent/20",
+    text: "text-accent",
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" />
@@ -116,7 +116,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: number)
       <p className={`flex-1 text-sm leading-relaxed ${style.text}`}>{toast.message}</p>
       <button
         onClick={() => onDismiss(toast.id)}
-        className="shrink-0 rounded-md p-0.5 text-muted transition-colors hover:text-foreground"
+        className="shrink-0 rounded-lg p-0.5 text-text-tertiary transition-colors duration-150 ease-in-out hover:text-text-primary"
         aria-label="Dismiss"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -128,7 +128,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: number)
   );
 }
 
-// ── Hook ───────────────────────────────────────────────────────────────
+// -- Hook --
 
 export function useToast(): ToastContextValue {
   const ctx = useContext(ToastContext);

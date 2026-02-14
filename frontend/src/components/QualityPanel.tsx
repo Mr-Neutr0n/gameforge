@@ -136,7 +136,7 @@ export default function QualityPanel({
   const hasResults = auditResults.length > 0;
 
   return (
-    <div className="border-b border-card-border bg-background">
+    <div className="border-b border-border-default bg-surface-0">
       <div className="px-3 py-2.5 sm:px-4 sm:py-3">
         {/* Header row */}
         <div className="flex items-center justify-between">
@@ -150,18 +150,18 @@ export default function QualityPanel({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="shrink-0 text-accent-cyan"
+              className="shrink-0 text-accent"
             >
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
-            <span className="text-xs font-semibold text-foreground">
+            <span className="text-xs font-semibold text-text-primary">
               Quality
             </span>
 
             {/* Overall score badge */}
             {overallScore !== null && (
               <span
-                className={`rounded-md border px-2 py-0.5 font-mono text-xs font-medium ${scoreBgColor(overallScore)} ${scoreColor(overallScore)}`}
+                className={`rounded-full border px-2 py-0.5 font-mono text-[10px] font-medium tabular-nums ${scoreBgColor(overallScore)} ${scoreColor(overallScore)}`}
               >
                 {overallScore}/100
               </span>
@@ -172,14 +172,14 @@ export default function QualityPanel({
           <button
             onClick={handleRunAll}
             disabled={isRunning}
-            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-muted transition-colors hover:bg-white/[0.04] hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-text-tertiary transition-colors duration-150 ease-in-out hover:bg-surface-2 hover:text-text-primary disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isRunning ? (
-              <div className="h-3 w-3 animate-spin rounded-full border border-muted border-t-foreground" />
+              <div className="h-3 w-3 animate-spin rounded-full border border-text-tertiary border-t-text-primary" />
             ) : (
               <svg
-                width="12"
-                height="12"
+                width="14"
+                height="14"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -197,15 +197,15 @@ export default function QualityPanel({
 
         {/* Loading state */}
         {loading && !hasResults && (
-          <div className="mt-2 flex items-center gap-2 text-xs text-muted">
-            <div className="h-3 w-3 animate-spin rounded-full border border-muted border-t-foreground" />
+          <div className="mt-2 flex items-center gap-2 text-xs text-text-tertiary">
+            <div className="h-3 w-3 animate-spin rounded-full border border-text-tertiary border-t-text-primary" />
             Loading audit results...
           </div>
         )}
 
         {/* No results state */}
         {!loading && !hasResults && !isRunning && (
-          <p className="mt-2 text-xs text-muted">
+          <p className="mt-2 text-xs text-text-tertiary">
             No audit results yet. Generate a game to see quality scores.
           </p>
         )}
@@ -229,42 +229,42 @@ export default function QualityPanel({
                 <div key={auditType}>
                   <button
                     onClick={() => checks && toggleExpand(auditType)}
-                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left transition-colors ${
+                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left transition-colors duration-150 ease-in-out ${
                       isExpanded
-                        ? "bg-white/[0.04]"
-                        : "hover:bg-white/[0.02]"
+                        ? "bg-surface-2"
+                        : "hover:bg-surface-1"
                     } ${checks ? "cursor-pointer" : "cursor-default"}`}
                   >
                     <div className="flex items-center gap-2">
                       <span
-                        className={`h-2 w-2 shrink-0 rounded-full ${statusDot(result.passed)}`}
+                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot(result.passed)}`}
                       />
                       <div>
-                        <span className="text-xs font-medium text-foreground">
+                        <span className="text-xs font-medium text-text-primary">
                           {AUDIT_LABELS[auditType] || auditType}
                         </span>
-                        <span className="ml-2 text-[10px] text-muted">
+                        <span className="ml-2 text-[10px] text-text-tertiary">
                           {AUDIT_DESCRIPTIONS[auditType] || ""}
                         </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <span
-                        className={`font-mono text-xs font-medium ${scoreColor(result.score)}`}
+                        className={`font-mono text-xs font-medium tabular-nums ${scoreColor(result.score)}`}
                       >
                         {result.score}
                       </span>
                       {checks && (
                         <svg
-                          width="12"
-                          height="12"
+                          width="14"
+                          height="14"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
                           strokeWidth="2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          className={`text-muted transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                          className={`text-text-tertiary transition-transform ${isExpanded ? "rotate-180" : ""}`}
                         >
                           <polyline points="6 9 12 15 18 9" />
                         </svg>
@@ -274,7 +274,7 @@ export default function QualityPanel({
 
                   {/* Expanded check details */}
                   {isExpanded && checks && (
-                    <div className="ml-4 mt-1 space-y-0.5 border-l border-card-border pl-3 pb-1">
+                    <div className="ml-4 mt-1 space-y-0.5 border-l border-border-default pl-3 pb-1">
                       {checks.map((check, i) => (
                         <div
                           key={i}
@@ -282,8 +282,8 @@ export default function QualityPanel({
                         >
                           {check.passed ? (
                             <svg
-                              width="12"
-                              height="12"
+                              width="14"
+                              height="14"
                               viewBox="0 0 24 24"
                               fill="none"
                               stroke="currentColor"
@@ -296,8 +296,8 @@ export default function QualityPanel({
                             </svg>
                           ) : (
                             <svg
-                              width="12"
-                              height="12"
+                              width="14"
+                              height="14"
                               viewBox="0 0 24 24"
                               fill="none"
                               stroke="currentColor"
@@ -310,7 +310,7 @@ export default function QualityPanel({
                               <line x1="6" y1="6" x2="18" y2="18" />
                             </svg>
                           )}
-                          <span className="text-[11px] leading-relaxed text-muted">
+                          <span className="text-xs leading-relaxed text-text-tertiary">
                             {check.message}
                           </span>
                         </div>

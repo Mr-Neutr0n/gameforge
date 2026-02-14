@@ -71,7 +71,7 @@ function GameCard({
   }, [menuOpen]);
 
   return (
-    <div className="game-card-hover group relative flex flex-col overflow-hidden rounded-2xl border border-card-border bg-card text-left transition-all hover:border-white/10 hover:bg-white/[0.03]">
+    <div className="game-card-hover group relative flex flex-col overflow-hidden rounded-xl border border-border-default bg-surface-1 text-left transition-all duration-200 hover:border-border-hover hover:bg-surface-2">
       {/* Menu button */}
       <div ref={menuRef} className="absolute right-2 top-2 z-10">
         <button
@@ -79,7 +79,7 @@ function GameCard({
             e.stopPropagation();
             setMenuOpen((prev) => !prev);
           }}
-          className="flex h-7 w-7 items-center justify-center rounded-lg bg-black/40 text-muted opacity-0 backdrop-blur-sm transition-all hover:bg-black/60 hover:text-foreground group-hover:opacity-100"
+          className="flex h-7 w-7 items-center justify-center rounded-lg bg-black/40 text-text-tertiary opacity-0 backdrop-blur-sm transition-all duration-150 hover:bg-black/60 hover:text-text-primary group-hover:opacity-100"
           aria-label="Game options"
         >
           <svg
@@ -95,18 +95,18 @@ function GameCard({
         </button>
 
         {menuOpen && (
-          <div className="absolute right-0 top-8 w-36 overflow-hidden rounded-xl border border-card-border bg-[#1a1a1a] shadow-xl">
+          <div className="absolute right-0 top-8 w-36 overflow-hidden rounded-xl border border-border-default bg-surface-2 shadow-xl">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 setMenuOpen(false);
                 onClick();
               }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-xs text-muted transition-colors hover:bg-white/[0.04] hover:text-foreground"
+              className="flex w-full items-center gap-2 px-3 py-2 text-xs text-text-tertiary transition-colors duration-150 ease-in-out hover:bg-surface-3 hover:text-text-primary"
             >
               <svg
-                width="12"
-                height="12"
+                width="14"
+                height="14"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -119,18 +119,18 @@ function GameCard({
               </svg>
               Open
             </button>
-            <div className="mx-2 border-t border-card-border" />
+            <div className="mx-2 border-t border-border-default" />
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 setMenuOpen(false);
                 onDelete();
               }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-xs text-red-400 transition-colors hover:bg-red-500/10"
+              className="flex w-full items-center gap-2 px-3 py-2 text-xs text-red-400 transition-colors duration-150 ease-in-out hover:bg-red-500/10"
             >
               <svg
-                width="12"
-                height="12"
+                width="14"
+                height="14"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -177,8 +177,8 @@ function GameCard({
           ) : (
             <div className="flex flex-col items-center gap-1.5">
               <svg
-                width="24"
-                height="24"
+                width="20"
+                height="20"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke={color}
@@ -191,7 +191,7 @@ function GameCard({
                 <line x1="8" y1="21" x2="16" y2="21" />
                 <line x1="12" y1="17" x2="12" y2="21" />
               </svg>
-              <span className="text-[10px] text-muted">No preview</span>
+              <span className="text-[10px] text-text-tertiary">No preview</span>
             </div>
           )}
         </div>
@@ -200,26 +200,26 @@ function GameCard({
         <div className="flex flex-1 flex-col p-3 sm:p-4">
           <div className="mb-1.5 flex items-center gap-2 sm:mb-2">
             <span
-              className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium ${
+              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
                 game.is_public
-                  ? "bg-accent-cyan/10 text-accent-cyan"
-                  : "bg-white/[0.04] text-muted"
+                  ? "bg-accent-muted text-accent"
+                  : "bg-surface-3 text-text-tertiary"
               }`}
             >
               {game.is_public ? "Public" : "Private"}
             </span>
           </div>
 
-          <h3 className="text-xs font-semibold text-foreground leading-snug line-clamp-1 sm:text-sm">
+          <h3 className="text-sm font-semibold text-text-primary leading-snug line-clamp-1">
             {game.title || "Untitled Game"}
           </h3>
 
-          <p className="mt-1 hidden text-xs text-muted leading-relaxed line-clamp-2 sm:block">
+          <p className="mt-1 hidden text-xs text-text-tertiary leading-relaxed line-clamp-2 sm:block">
             {game.description || game.prompt || "No description"}
           </p>
 
           <div className="mt-auto pt-3">
-            <span className="text-[11px] text-muted/60">{formatDate(game.created_at)}</span>
+            <span className="text-[10px] text-text-quaternary">{formatDate(game.created_at)}</span>
           </div>
         </div>
       </button>
@@ -231,13 +231,13 @@ function DashboardSidebar({ gameCount }: { gameCount: number }) {
   return (
     <div className="flex h-full flex-col p-4">
       <div className="mb-4">
-        <h2 className="text-sm font-semibold text-foreground">Dashboard</h2>
-        <p className="mt-1 text-xs text-muted">Your game library</p>
+        <h2 className="text-base font-semibold font-display text-text-primary">Dashboard</h2>
+        <p className="mt-1 text-xs text-text-tertiary">Your game library</p>
       </div>
 
-      <div className="rounded-xl border border-card-border bg-white/[0.02] p-3">
+      <div className="rounded-xl border border-border-default bg-surface-1 p-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-cyan/10">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-muted">
             <svg
               width="14"
               height="14"
@@ -247,14 +247,14 @@ function DashboardSidebar({ gameCount }: { gameCount: number }) {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="text-accent-cyan"
+              className="text-accent"
             >
               <polygon points="5 3 19 12 5 21 5 3" />
             </svg>
           </div>
           <div>
-            <p className="text-sm font-medium text-foreground">{gameCount}</p>
-            <p className="text-[11px] text-muted">
+            <p className="text-sm font-medium text-text-primary tabular-nums">{gameCount}</p>
+            <p className="text-xs text-text-tertiary">
               {gameCount === 1 ? "Game" : "Games"} created
             </p>
           </div>
@@ -262,8 +262,8 @@ function DashboardSidebar({ gameCount }: { gameCount: number }) {
       </div>
 
       <div className="mt-auto pt-4">
-        <div className="rounded-xl border border-card-border bg-white/[0.02] p-3">
-          <p className="text-xs text-muted leading-relaxed">
+        <div className="rounded-xl border border-border-default bg-surface-1 p-3">
+          <p className="text-xs text-text-tertiary leading-relaxed">
             Create games from text prompts using AI. Each game is a playable
             Phaser.js project you can iterate on and share.
           </p>
@@ -277,17 +277,17 @@ function EmptyState({ onCreateGame }: { onCreateGame: () => void }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-6">
       <div className="flex flex-col items-center gap-4 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-card-border bg-card">
+        <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border-default bg-surface-1">
           <svg
-            width="28"
-            height="28"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-muted"
+            className="text-text-tertiary"
           >
             <rect x="2" y="6" width="20" height="12" rx="2" />
             <path d="M6 12h4" />
@@ -297,16 +297,16 @@ function EmptyState({ onCreateGame }: { onCreateGame: () => void }) {
           </svg>
         </div>
         <div>
-          <h3 className="text-base font-semibold text-foreground">
+          <h3 className="text-base font-semibold font-display text-text-primary">
             No games yet
           </h3>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 text-sm text-text-tertiary">
             Create your first one.
           </p>
         </div>
         <button
           onClick={onCreateGame}
-          className="mt-2 flex items-center gap-2 rounded-xl bg-accent-cyan px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
+          className="mt-2 flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-xs font-medium text-[var(--surface-0)] transition-all duration-150 hover:brightness-90"
         >
           <svg
             width="14"
@@ -344,7 +344,6 @@ function DashboardContent() {
       try {
         const data = await getMyGames();
         if (!cancelled) {
-          // Sort by newest first
           const sorted = [...data].sort(
             (a, b) =>
               new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
@@ -397,19 +396,19 @@ function DashboardContent() {
     return (
       <AppLayout sidebar={<DashboardSidebar gameCount={0} />}>
         <div className="flex flex-1 flex-col overflow-y-auto">
-          <div className="flex items-center justify-between border-b border-card-border px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex items-center justify-between border-b border-border-default px-4 py-3 sm:px-6 sm:py-4">
             <div>
-              <div className="h-5 w-24 rounded bg-white/[0.06] animate-pulse" />
-              <div className="mt-1 h-3 w-16 rounded bg-white/[0.04] animate-pulse" />
+              <div className="h-5 w-24 rounded bg-surface-3 animate-pulse" />
+              <div className="mt-1 h-3 w-16 rounded bg-surface-2 animate-pulse" />
             </div>
           </div>
           <div className="p-4 sm:p-6">
             <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="rounded-2xl border border-card-border bg-card p-4 animate-pulse">
-                  <div className="h-32 rounded-xl bg-white/[0.04] mb-3" />
-                  <div className="h-4 rounded bg-white/[0.06] w-3/4 mb-2" />
-                  <div className="h-3 rounded bg-white/[0.04] w-1/2" />
+                <div key={i} className="rounded-xl border border-border-default bg-surface-1 p-4 animate-pulse">
+                  <div className="h-32 rounded-lg bg-surface-2 mb-3" />
+                  <div className="h-4 rounded bg-surface-3 w-3/4 mb-2" />
+                  <div className="h-3 rounded bg-surface-2 w-1/2" />
                 </div>
               ))}
             </div>
@@ -426,8 +425,8 @@ function DashboardContent() {
           <div className="flex flex-col items-center gap-3 text-center">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/10">
               <svg
-                width="18"
-                height="18"
+                width="16"
+                height="16"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -441,10 +440,10 @@ function DashboardContent() {
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
             </div>
-            <p className="text-sm text-muted">{error}</p>
+            <p className="text-sm text-text-tertiary">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="text-sm text-accent-cyan hover:underline"
+              className="text-sm text-accent hover:underline"
             >
               Retry
             </button>
@@ -466,16 +465,16 @@ function DashboardContent() {
     <AppLayout sidebar={<DashboardSidebar gameCount={games.length} />}>
       <div className="flex flex-1 flex-col overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-card-border px-4 py-3 sm:px-6 sm:py-4">
+        <div className="flex items-center justify-between border-b border-border-default px-4 py-3 sm:px-6 sm:py-4">
           <div>
-            <h1 className="font-display text-base font-semibold text-foreground sm:text-lg">My Games</h1>
-            <p className="text-xs text-muted">
+            <h1 className="font-display text-lg font-semibold text-text-primary">My Games</h1>
+            <p className="text-xs text-text-tertiary tabular-nums">
               {games.length} {games.length === 1 ? "game" : "games"}
             </p>
           </div>
           <button
             onClick={handleCreateGame}
-            className="flex items-center gap-2 rounded-xl bg-accent-cyan px-3 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 sm:px-4"
+            className="flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-xs font-medium text-[var(--surface-0)] transition-all duration-150 hover:brightness-90"
           >
             <svg
               width="14"

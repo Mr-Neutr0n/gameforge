@@ -26,7 +26,7 @@ const TEMPLATES: Template[] = [
     color: "#22d3ee",
     example: "A blue square jumps across green platforms to reach the flag",
     icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="17" width="18" height="3" rx="1" />
         <rect x="7" y="12" width="6" height="2" rx="0.5" />
         <rect x="14" y="8" width="5" height="2" rx="0.5" />
@@ -42,7 +42,7 @@ const TEMPLATES: Template[] = [
     color: "#3b82f6",
     example: "Explore a dungeon, avoid enemies, collect keys to unlock doors",
     icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="18" height="18" rx="2" />
         <line x1="3" y1="9" x2="21" y2="9" />
         <line x1="3" y1="15" x2="21" y2="15" />
@@ -59,7 +59,7 @@ const TEMPLATES: Template[] = [
     color: "#a855f7",
     example: "A spaceship shoots at waves of alien invaders from the bottom",
     icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <polygon points="12 2 15 10 12 8 9 10 12 2" />
         <line x1="12" y1="10" x2="12" y2="16" />
         <circle cx="6" cy="6" r="1.5" />
@@ -77,7 +77,7 @@ const TEMPLATES: Template[] = [
     color: "#f59e0b",
     example: "A match-3 grid where you swap gems to clear rows and score points",
     icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7" rx="1.5" />
         <rect x="14" y="3" width="7" height="7" rx="1.5" />
         <rect x="3" y="14" width="7" height="7" rx="1.5" />
@@ -94,23 +94,23 @@ function CreateSidebar() {
   return (
     <div className="flex h-full flex-col p-4">
       <div className="mb-4">
-        <h2 className="text-sm font-semibold text-foreground">Create Game</h2>
-        <p className="mt-1 text-xs text-muted">Describe your game idea</p>
+        <h2 className="text-base font-semibold font-display text-text-primary">Create Game</h2>
+        <p className="mt-1 text-xs text-text-tertiary">Describe your game idea</p>
       </div>
 
       <div className="flex flex-col gap-3">
-        <div className="rounded-xl border border-card-border bg-white/[0.02] p-3">
+        <div className="rounded-xl border border-border-default bg-surface-1 p-3">
           <div className="mb-2 flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-accent-cyan/10">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-accent-cyan">
+            <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-accent-muted">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="16" x2="12" y2="12" />
                 <line x1="12" y1="8" x2="12.01" y2="8" />
               </svg>
             </div>
-            <span className="text-xs font-medium text-foreground">Tips</span>
+            <span className="text-xs font-medium text-text-primary">Tips</span>
           </div>
-          <ul className="flex flex-col gap-1.5 text-xs text-muted leading-relaxed">
+          <ul className="flex flex-col gap-1.5 text-xs text-text-tertiary leading-relaxed">
             <li>Be specific about controls and mechanics</li>
             <li>Describe what the player sees and does</li>
             <li>Mention win/lose conditions</li>
@@ -118,16 +118,16 @@ function CreateSidebar() {
           </ul>
         </div>
 
-        <div className="rounded-xl border border-card-border bg-white/[0.02] p-3">
+        <div className="rounded-xl border border-border-default bg-surface-1 p-3">
           <div className="mb-2 flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-accent-purple/10">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-accent-purple">
+            <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-secondary-muted">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-secondary">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
               </svg>
             </div>
-            <span className="text-xs font-medium text-foreground">How it works</span>
+            <span className="text-xs font-medium text-text-primary">How it works</span>
           </div>
-          <ol className="flex flex-col gap-1.5 text-xs text-muted leading-relaxed list-decimal list-inside">
+          <ol className="flex flex-col gap-1.5 text-xs text-text-tertiary leading-relaxed list-decimal list-inside">
             <li>Describe your game idea</li>
             <li>Pick a template (optional)</li>
             <li>AI plans and generates code</li>
@@ -137,8 +137,8 @@ function CreateSidebar() {
       </div>
 
       <div className="mt-auto pt-4">
-        <div className="rounded-xl border border-card-border bg-white/[0.02] p-3">
-          <p className="text-xs text-muted leading-relaxed">
+        <div className="rounded-xl border border-border-default bg-surface-1 p-3">
+          <p className="text-xs text-text-tertiary leading-relaxed">
             Games are built with Phaser.js and rendered directly in your browser. No external assets needed — all graphics are drawn with code.
           </p>
         </div>
@@ -203,9 +203,9 @@ function CreateContent() {
     <AppLayout sidebar={<CreateSidebar />}>
       <div className="flex flex-1 flex-col overflow-y-auto">
         {/* Header */}
-        <div className="border-b border-card-border px-4 py-3 sm:px-6 sm:py-4">
-          <h1 className="font-display text-base font-semibold text-foreground sm:text-lg">New Game</h1>
-          <p className="mt-0.5 text-xs text-muted">
+        <div className="border-b border-border-default px-4 py-3 sm:px-6 sm:py-4">
+          <h1 className="font-display text-lg font-semibold text-text-primary">New Game</h1>
+          <p className="mt-0.5 text-xs text-text-tertiary">
             Describe your game and let AI build it
           </p>
         </div>
@@ -216,7 +216,7 @@ function CreateContent() {
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="game-prompt"
-                className="text-sm font-medium text-foreground"
+                className="text-sm font-medium text-text-primary"
               >
                 Game Description
               </label>
@@ -228,11 +228,11 @@ function CreateContent() {
                 placeholder="Describe your game... e.g., A platformer where a red square jumps across moving platforms over a lava pit. Arrow keys to move and jump. Collect coins for points. 3 lives."
                 rows={5}
                 disabled={generating}
-                className="w-full resize-none rounded-xl border border-card-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted/60 focus:border-accent-cyan focus:outline-none focus:ring-1 focus:ring-accent-cyan/30 disabled:opacity-50"
+                className="w-full resize-none rounded-lg border border-border-default bg-surface-1 px-4 py-3 text-sm text-text-primary placeholder:text-text-quaternary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 disabled:opacity-40 transition-colors duration-150 ease-in-out"
               />
-              <p className="text-xs text-muted">
+              <p className="text-xs text-text-tertiary">
                 Press{" "}
-                <kbd className="rounded bg-card px-1.5 py-0.5 font-mono text-[11px] text-muted border border-card-border">
+                <kbd className="rounded bg-surface-1 px-1.5 py-0.5 font-mono text-xs text-text-tertiary border border-border-default">
                   {typeof navigator !== "undefined" &&
                   /Mac/.test(navigator.userAgent)
                     ? "Cmd"
@@ -246,10 +246,10 @@ function CreateContent() {
             {/* Template selector */}
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-foreground">
+                <label className="text-sm font-medium text-text-primary">
                   Template
                 </label>
-                <span className="text-xs text-muted">Optional</span>
+                <span className="text-xs text-text-tertiary">Optional</span>
               </div>
               <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
                 {TEMPLATES.map((template) => {
@@ -259,10 +259,10 @@ function CreateContent() {
                       key={template.id}
                       onClick={() => handleTemplateClick(template)}
                       disabled={generating}
-                      className={`group relative flex flex-col items-center gap-2 rounded-xl border p-3 text-center transition-all disabled:opacity-50 sm:gap-2.5 sm:p-4 ${
+                      className={`group relative flex flex-col items-center gap-2 rounded-xl border p-3 text-center transition-all duration-150 disabled:opacity-40 sm:gap-2.5 sm:p-4 ${
                         isSelected
-                          ? "border-white/20 bg-white/[0.04]"
-                          : "border-card-border bg-card hover:border-white/10 hover:bg-white/[0.03]"
+                          ? "border-border-strong bg-surface-2"
+                          : "border-border-default bg-surface-1 hover:border-border-hover hover:bg-surface-2"
                       }`}
                     >
                       {/* Selected indicator */}
@@ -272,11 +272,11 @@ function CreateContent() {
                           style={{ backgroundColor: template.color }}
                         >
                           <svg
-                            width="10"
-                            height="10"
+                            width="14"
+                            height="14"
                             viewBox="0 0 24 24"
                             fill="none"
-                            stroke="#0c0c0c"
+                            stroke="#09090b"
                             strokeWidth="3"
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -288,7 +288,7 @@ function CreateContent() {
 
                       {/* Icon */}
                       <div
-                        className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors"
+                        className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-150"
                         style={{
                           backgroundColor: `${template.color}${isSelected ? "20" : "10"}`,
                           color: template.color,
@@ -300,7 +300,7 @@ function CreateContent() {
                       {/* Label */}
                       <span
                         className={`text-xs font-medium ${
-                          isSelected ? "text-foreground" : "text-muted"
+                          isSelected ? "text-text-primary" : "text-text-tertiary"
                         }`}
                       >
                         {template.label}
@@ -310,8 +310,8 @@ function CreateContent() {
                       <span
                         className={`text-[10px] leading-tight ${
                           isSelected
-                            ? "text-muted"
-                            : "text-muted/60 opacity-0 group-hover:opacity-100"
+                            ? "text-text-tertiary"
+                            : "text-text-quaternary opacity-0 group-hover:opacity-100"
                         } transition-opacity`}
                       >
                         {template.description}
@@ -349,11 +349,11 @@ function CreateContent() {
               <button
                 onClick={handleGenerate}
                 disabled={!canGenerate || generating}
-                className="flex items-center justify-center gap-2 rounded-xl bg-accent-cyan px-6 py-2.5 text-sm font-medium text-background transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-xs font-medium text-[var(--surface-0)] transition-all duration-150 hover:brightness-90 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {generating ? (
                   <>
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--surface-0)] border-t-transparent" />
                     Creating...
                   </>
                 ) : (
@@ -377,7 +377,7 @@ function CreateContent() {
               <button
                 onClick={() => router.push("/dashboard")}
                 disabled={generating}
-                className="rounded-xl px-4 py-2.5 text-center text-sm text-muted transition-colors hover:bg-card hover:text-foreground disabled:opacity-50"
+                className="rounded-lg bg-surface-2 border border-border-default px-3 py-1.5 text-center text-xs font-medium text-text-tertiary transition-all duration-150 hover:bg-surface-3 hover:border-border-hover hover:text-text-primary disabled:opacity-40"
               >
                 Cancel
               </button>

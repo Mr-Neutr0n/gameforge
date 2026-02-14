@@ -87,10 +87,10 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
   // Loading state
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-screen items-center justify-center bg-surface-0">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-accent-cyan/20 border-t-accent-cyan" />
-          <p className="text-sm text-muted">Loading game...</p>
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-accent/20 border-t-accent" />
+          <p className="text-sm text-text-tertiary">Loading game...</p>
         </div>
       </div>
     );
@@ -99,17 +99,17 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
   // Error / 404 state
   if (error || !game) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-screen items-center justify-center bg-surface-0">
         <div className="mx-4 flex max-w-md flex-col items-center gap-6 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-card border border-card-border">
+          <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-surface-1 border border-border-default">
             <svg
-              width="28"
-              height="28"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.5"
-              className="text-muted"
+              className="text-text-tertiary"
             >
               <circle cx="12" cy="12" r="10" />
               <path d="M16 16s-1.5-2-4-2-4 2-4 2" />
@@ -118,17 +118,17 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
             </svg>
           </div>
           <div>
-            <h1 className="mb-2 text-xl font-semibold text-foreground">
+            <h1 className="mb-2 text-xl font-semibold text-text-primary">
               Game Not Found
             </h1>
-            <p className="text-sm text-muted">
+            <p className="text-sm text-text-tertiary">
               {error ||
                 "This game doesn't exist or isn't publicly shared."}
             </p>
           </div>
           <Link
             href="/"
-            className="rounded-lg bg-accent-cyan/10 px-5 py-2.5 text-sm font-medium text-accent-cyan border border-accent-cyan/20 transition-colors hover:bg-accent-cyan/20"
+            className="rounded-lg bg-accent-muted px-4 py-2 text-xs font-medium text-accent border border-accent/20 transition-all duration-150 hover:bg-accent-subtle"
           >
             Go to GameForge
           </Link>
@@ -140,17 +140,17 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
   // No game code
   if (!game.game_code) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-screen items-center justify-center bg-surface-0">
         <div className="mx-4 flex max-w-md flex-col items-center gap-6 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-card border border-card-border">
+          <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-surface-1 border border-border-default">
             <svg
-              width="28"
-              height="28"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.5"
-              className="text-muted"
+              className="text-text-tertiary"
             >
               <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
               <line x1="8" y1="21" x2="16" y2="21" />
@@ -158,16 +158,16 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
             </svg>
           </div>
           <div>
-            <h1 className="mb-2 text-xl font-semibold text-foreground">
+            <h1 className="mb-2 text-xl font-semibold text-text-primary">
               Game In Progress
             </h1>
-            <p className="text-sm text-muted">
+            <p className="text-sm text-text-tertiary">
               This game is still being generated. Check back soon!
             </p>
           </div>
           <Link
             href="/"
-            className="rounded-lg bg-accent-cyan/10 px-5 py-2.5 text-sm font-medium text-accent-cyan border border-accent-cyan/20 transition-colors hover:bg-accent-cyan/20"
+            className="rounded-lg bg-accent-muted px-4 py-2 text-xs font-medium text-accent border border-accent/20 transition-all duration-150 hover:bg-accent-subtle"
           >
             Go to GameForge
           </Link>
@@ -178,20 +178,20 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
 
   const title = game.title || "Untitled Game";
 
-  // Fullscreen mode — game only
+  // Fullscreen mode -- game only
   if (isFullscreen) {
     return (
-      <div className="fixed inset-0 z-50 bg-[#0a0a0a]">
+      <div className="fixed inset-0 z-50 bg-surface-0">
         <GamePreview gameCode={game.game_code} />
         {/* Exit fullscreen button */}
         <button
           onClick={toggleFullscreen}
-          className="fixed right-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-xl bg-card/80 backdrop-blur-sm border border-card-border text-muted transition-all hover:bg-card hover:text-foreground"
+          className="fixed right-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-xl bg-surface-1/80 backdrop-blur-sm border border-border-default text-text-tertiary transition-all duration-150 hover:bg-surface-1 hover:text-text-primary"
           title="Exit fullscreen (Esc)"
         >
           <svg
-            width="18"
-            height="18"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -211,12 +211,12 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
 
   // Normal view
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-surface-0">
       {/* Header bar */}
-      <header className="flex h-14 shrink-0 items-center justify-between border-b border-card-border px-4 sm:px-6">
+      <header className="flex h-14 shrink-0 items-center justify-between border-b border-border-default px-4 sm:px-6">
         <Link
           href="/"
-          className="flex items-center gap-2 text-muted transition-colors hover:text-foreground"
+          className="flex items-center gap-2 text-text-tertiary transition-colors duration-150 ease-in-out hover:text-text-primary"
         >
           <svg
             width="20"
@@ -239,7 +239,7 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
           {/* Fullscreen toggle */}
           <button
             onClick={toggleFullscreen}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-card hover:text-foreground"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-text-tertiary transition-colors duration-150 ease-in-out hover:bg-surface-1 hover:text-text-primary"
             title="Fullscreen"
           >
             <svg
@@ -263,22 +263,22 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
 
       {/* Game area */}
       <div className="flex flex-1 flex-col lg:flex-row">
-        {/* Game preview — takes most of the space */}
+        {/* Game preview -- takes most of the space */}
         <div className="flex-1 min-h-[60vh] lg:min-h-0">
           <GamePreview gameCode={game.game_code} />
         </div>
 
         {/* Info sidebar */}
-        <div className="w-full shrink-0 border-t border-card-border lg:w-80 lg:border-l lg:border-t-0">
+        <div className="w-full shrink-0 border-t border-border-default lg:w-80 lg:border-l lg:border-t-0">
           <div className="p-5 sm:p-6">
             {/* Title */}
-            <h1 className="mb-2 text-lg font-semibold text-foreground leading-snug">
+            <h1 className="mb-2 text-lg font-semibold font-display text-text-primary leading-snug">
               {title}
             </h1>
 
             {/* Description */}
             {game.description && (
-              <p className="mb-4 text-sm leading-relaxed text-muted">
+              <p className="mb-4 text-sm leading-relaxed text-text-tertiary">
                 {game.description}
               </p>
             )}
@@ -286,7 +286,7 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
             {/* Creator + date */}
             <div className="mb-6 flex flex-col gap-2">
               {game.creator_name && (
-                <div className="flex items-center gap-2 text-sm text-muted">
+                <div className="flex items-center gap-2 text-sm text-text-tertiary">
                   <svg
                     width="14"
                     height="14"
@@ -304,7 +304,7 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
                   <span>{game.creator_name}</span>
                 </div>
               )}
-              <div className="flex items-center gap-2 text-sm text-muted">
+              <div className="flex items-center gap-2 text-sm text-text-tertiary">
                 <svg
                   width="14"
                   height="14"
@@ -325,7 +325,7 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
               </div>
             </div>
 
-            {/* Quality badge — shown only if score > 80 */}
+            {/* Quality badge -- shown only if score > 80 */}
             {auditSummary &&
               auditSummary.has_audits &&
               auditSummary.overall_score > 80 && (
@@ -349,7 +349,7 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
                     <p className="text-xs font-semibold text-green-400">
                       Quality Verified
                     </p>
-                    <p className="text-[11px] text-muted">
+                    <p className="text-xs text-text-tertiary tabular-nums">
                       Score: {auditSummary.overall_score}/100
                     </p>
                   </div>
@@ -357,33 +357,33 @@ export default function GameShareClient({ gameId }: GameShareClientProps) {
               )}
 
             {/* Divider */}
-            <div className="mb-5 border-t border-card-border" />
+            <div className="mb-5 border-t border-border-default" />
 
             {/* Made with GameForge badge */}
             <Link
               href="/"
-              className="flex items-center gap-2.5 rounded-xl bg-card p-3.5 border border-card-border transition-colors hover:border-accent-cyan/20 hover:bg-card/80"
+              className="flex items-center gap-2.5 rounded-xl bg-surface-1 p-3.5 border border-border-default transition-colors duration-150 ease-in-out hover:border-accent/20 hover:bg-surface-2"
             >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-cyan/10">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-muted">
                 <svg
-                  width="18"
-                  height="18"
+                  width="16"
+                  height="16"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="text-accent-cyan"
+                  className="text-accent"
                 >
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">
+                <p className="text-sm font-medium text-text-primary">
                   Made with GameForge
                 </p>
-                <p className="text-xs text-muted">
+                <p className="text-xs text-text-tertiary">
                   Create your own game with AI
                 </p>
               </div>

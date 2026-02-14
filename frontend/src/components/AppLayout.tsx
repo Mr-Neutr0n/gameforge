@@ -49,19 +49,19 @@ export default function AppLayout({ sidebar, children }: AppLayoutProps) {
   const sidebarContent = sidebar || <DefaultSidebar />;
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-background">
+    <div className="flex h-screen flex-col overflow-hidden bg-surface-0">
       {/* Top bar */}
-      <header className="flex h-14 shrink-0 items-center justify-between border-b border-card-border px-4">
+      <header className="flex h-14 shrink-0 items-center justify-between border-b border-border-default px-4">
         <div className="flex items-center gap-3">
           {/* Sidebar toggle (mobile + tablet) */}
           <button
             onClick={toggleSidebar}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-card hover:text-foreground lg:hidden"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition-colors duration-150 ease-in-out hover:bg-surface-1 hover:text-text-primary lg:hidden"
             aria-label="Toggle sidebar"
           >
             <svg
-              width="18"
-              height="18"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -87,8 +87,8 @@ export default function AppLayout({ sidebar, children }: AppLayoutProps) {
           {/* Logo */}
           <a href="/dashboard" className="flex items-center gap-1.5">
             <span className="font-display text-lg font-bold tracking-tight">
-              <span className="text-accent-cyan">Game</span>
-              <span className="text-accent-purple">Forge</span>
+              <span className="text-accent">Game</span>
+              <span className="text-secondary">Forge</span>
             </span>
           </a>
         </div>
@@ -97,7 +97,7 @@ export default function AppLayout({ sidebar, children }: AppLayoutProps) {
         {session?.user && (
           <div className="flex items-center gap-3">
             <div className="hidden items-center gap-2 sm:flex">
-              <span className="text-sm text-muted">
+              <span className="text-sm text-text-secondary">
                 {session.user.name || session.user.email}
               </span>
             </div>
@@ -107,11 +107,11 @@ export default function AppLayout({ sidebar, children }: AppLayoutProps) {
                 alt={session.user.name || "User"}
                 width={32}
                 height={32}
-                className="rounded-full border border-card-border"
+                className="rounded-full border border-border-default"
                 unoptimized
               />
             ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-card border border-card-border text-sm font-medium text-muted">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-1 border border-border-default text-sm font-medium text-text-tertiary">
                 {(session.user.name || session.user.email || "U")
                   .charAt(0)
                   .toUpperCase()}
@@ -119,7 +119,7 @@ export default function AppLayout({ sidebar, children }: AppLayoutProps) {
             )}
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
-              className="hidden sm:inline-flex rounded-lg px-3 py-1.5 text-sm text-muted transition-colors hover:bg-card hover:text-foreground"
+              className="hidden sm:inline-flex rounded-lg px-3 py-1.5 text-xs font-medium text-text-tertiary transition-colors duration-150 ease-in-out hover:bg-surface-1 hover:text-text-primary"
             >
               Sign out
             </button>
@@ -131,7 +131,7 @@ export default function AppLayout({ sidebar, children }: AppLayoutProps) {
       <div className="relative flex flex-1 overflow-hidden">
         {/* Sidebar - desktop (persistent left panel) */}
         <aside
-          className={`hidden lg:flex w-80 shrink-0 flex-col border-r border-card-border bg-background transition-all duration-200 ${
+          className={`hidden lg:flex w-80 shrink-0 flex-col border-r border-border-default bg-surface-0 transition-all duration-200 ${
             sidebarOpen ? "lg:w-80" : "lg:w-0 lg:overflow-hidden lg:border-r-0"
           }`}
         >
@@ -147,7 +147,7 @@ export default function AppLayout({ sidebar, children }: AppLayoutProps) {
               className="fixed inset-0 z-40 bg-black/50"
               onClick={closeSidebar}
             />
-            <aside className="fixed inset-y-14 left-0 z-50 flex w-80 flex-col border-r border-card-border bg-background">
+            <aside className="fixed inset-y-14 left-0 z-50 flex w-80 flex-col border-r border-border-default bg-surface-0">
               <div className="flex h-full flex-col overflow-hidden">
                 {sidebarContent}
               </div>
@@ -162,10 +162,10 @@ export default function AppLayout({ sidebar, children }: AppLayoutProps) {
               className="fixed inset-0 z-40 bg-black/50"
               onClick={closeSidebar}
             />
-            <aside className="safe-bottom fixed inset-x-0 bottom-0 z-50 flex max-h-[70vh] flex-col rounded-t-2xl border-t border-card-border bg-background">
+            <aside className="safe-bottom fixed inset-x-0 bottom-0 z-50 flex max-h-[70vh] flex-col rounded-t-xl border-t border-border-default bg-surface-0">
               {/* Bottom sheet drag handle */}
               <div className="flex shrink-0 items-center justify-center pb-1 pt-3">
-                <div className="h-1 w-10 rounded-full bg-white/20" />
+                <div className="h-1 w-10 rounded-full bg-border-strong" />
               </div>
               <div className="flex flex-1 flex-col overflow-y-auto">
                 {sidebarContent}
@@ -177,13 +177,13 @@ export default function AppLayout({ sidebar, children }: AppLayoutProps) {
         {/* Desktop sidebar toggle */}
         <button
           onClick={toggleSidebar}
-          className="hidden lg:flex absolute left-0 top-1/2 z-30 -translate-y-1/2 h-16 w-4 items-center justify-center rounded-r-md bg-card border border-l-0 border-card-border text-muted transition-colors hover:text-foreground hover:bg-card"
+          className="hidden lg:flex absolute left-0 top-1/2 z-30 -translate-y-1/2 h-16 w-4 items-center justify-center rounded-r-md bg-surface-1 border border-l-0 border-border-default text-text-tertiary transition-colors duration-150 ease-in-out hover:text-text-primary hover:bg-surface-2"
           style={{ left: sidebarOpen ? "320px" : "0px" }}
           aria-label="Toggle sidebar"
         >
           <svg
-            width="10"
-            height="10"
+            width="14"
+            height="14"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -210,10 +210,10 @@ function DefaultSidebar() {
   return (
     <div className="flex h-full flex-col p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground">Activity</h2>
+        <h2 className="text-sm font-semibold text-text-primary">Activity</h2>
       </div>
       <div className="flex flex-1 items-center justify-center">
-        <p className="text-sm text-muted">No activity yet</p>
+        <p className="text-sm text-text-tertiary">No activity yet</p>
       </div>
     </div>
   );

@@ -40,11 +40,11 @@ function getStepStyle(
 ): StepStyle {
   if (role === "user") {
     return {
-      dotColor: "bg-accent-purple",
-      lineColor: "border-accent-purple/30",
+      dotColor: "bg-secondary",
+      lineColor: "border-secondary/30",
       label: "You",
-      labelBg: "bg-accent-purple/10",
-      labelText: "text-accent-purple",
+      labelBg: "bg-secondary/10",
+      labelText: "text-secondary",
       icon: "user",
     };
   }
@@ -52,11 +52,11 @@ function getStepStyle(
   switch (stepType) {
     case "plan":
       return {
-        dotColor: "bg-accent-blue",
-        lineColor: "border-accent-blue/30",
+        dotColor: "bg-blue-400",
+        lineColor: "border-blue-400/30",
         label: "Plan",
-        labelBg: "bg-accent-blue/10",
-        labelText: "text-accent-blue",
+        labelBg: "bg-blue-400/10",
+        labelText: "text-blue-400",
         icon: "plan",
       };
     case "code":
@@ -88,11 +88,11 @@ function getStepStyle(
       };
     default:
       return {
-        dotColor: "bg-muted",
-        lineColor: "border-muted/30",
+        dotColor: "bg-text-tertiary",
+        lineColor: "border-text-tertiary/30",
         label: "Agent",
-        labelBg: "bg-muted/10",
-        labelText: "text-muted",
+        labelBg: "bg-text-tertiary/10",
+        labelText: "text-text-tertiary",
         icon: "plan",
       };
   }
@@ -120,12 +120,12 @@ function ExpandableCode({ content }: { content: string }) {
     <div className="mt-1.5">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="text-xs text-muted hover:text-foreground transition-colors"
+        className="text-xs text-text-tertiary hover:text-text-primary transition-colors duration-150 ease-in-out"
       >
         {expanded ? "Hide code" : "Show code"}
       </button>
       {expanded && (
-        <pre className="mt-1.5 overflow-x-auto rounded-md bg-[#0a0a0a] border border-card-border p-2 font-mono text-xs text-muted leading-relaxed max-h-48 overflow-y-auto">
+        <pre className="mt-1.5 overflow-x-auto rounded-lg bg-surface-0 border border-border-default p-2 font-mono text-xs text-text-tertiary leading-relaxed max-h-48 overflow-y-auto">
           {content.length > 2000 ? content.slice(0, 2000) + "\n..." : content}
         </pre>
       )}
@@ -148,12 +148,12 @@ function ExpandableJson({ content }: { content: string }) {
     <div className="mt-1.5">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="text-xs text-muted hover:text-foreground transition-colors"
+        className="text-xs text-text-tertiary hover:text-text-primary transition-colors duration-150 ease-in-out"
       >
         {expanded ? "Hide details" : "Show details"}
       </button>
       {expanded && (
-        <pre className="mt-1.5 overflow-x-auto rounded-md bg-[#0a0a0a] border border-card-border p-2 font-mono text-xs text-muted leading-relaxed max-h-48 overflow-y-auto">
+        <pre className="mt-1.5 overflow-x-auto rounded-lg bg-surface-0 border border-border-default p-2 font-mono text-xs text-text-tertiary leading-relaxed max-h-48 overflow-y-auto">
           {formatted.length > 2000
             ? formatted.slice(0, 2000) + "\n..."
             : formatted}
@@ -180,7 +180,7 @@ function ConversationEntry({ entry }: { entry: Conversation }) {
       {/* Timeline line */}
       <div className="flex flex-col items-center">
         <div
-          className={`h-2.5 w-2.5 shrink-0 rounded-full ${style.dotColor} ring-2 ring-background`}
+          className={`h-2.5 w-2.5 shrink-0 rounded-full ${style.dotColor} ring-2 ring-surface-0`}
         />
         <div className={`w-px flex-1 border-l ${style.lineColor}`} />
       </div>
@@ -189,35 +189,35 @@ function ConversationEntry({ entry }: { entry: Conversation }) {
       <div className="min-w-0 flex-1 -mt-0.5">
         <div className="flex items-center gap-2 flex-wrap">
           <span
-            className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium ${style.labelBg} ${style.labelText}`}
+            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${style.labelBg} ${style.labelText}`}
           >
             {style.label}
           </span>
-          <span className="text-[10px] text-muted/60">
+          <span className="text-[10px] text-text-quaternary">
             {formatTimestamp(entry.created_at)}
           </span>
         </div>
 
         {entry.role === "user" ? (
-          <p className="mt-1 text-xs text-foreground/90 leading-relaxed">
+          <p className="mt-1 text-xs text-text-primary/90 leading-relaxed">
             {entry.content}
           </p>
         ) : isCodeContent(entry.step_type) ? (
           <>
-            <p className="mt-1 text-xs text-foreground/80 leading-relaxed">
+            <p className="mt-1 text-xs text-text-primary/80 leading-relaxed">
               {summary}
             </p>
             <ExpandableCode content={entry.content} />
           </>
         ) : isJsonContent(entry.step_type) ? (
           <>
-            <p className="mt-1 text-xs text-foreground/80 leading-relaxed line-clamp-2">
+            <p className="mt-1 text-xs text-text-primary/80 leading-relaxed line-clamp-2">
               {summary}
             </p>
             <ExpandableJson content={entry.content} />
           </>
         ) : (
-          <p className="mt-1 text-xs text-foreground/80 leading-relaxed line-clamp-3">
+          <p className="mt-1 text-xs text-text-primary/80 leading-relaxed line-clamp-3">
             {summary}
           </p>
         )}
@@ -240,11 +240,11 @@ export default function ConversationHistory({
   return (
     <div className="p-3 sm:p-4">
       <div className="mb-3 flex items-center gap-2">
-        <div className="h-px flex-1 bg-card-border" />
-        <span className="text-[10px] font-medium uppercase tracking-wider text-muted/60">
+        <div className="h-px flex-1 bg-border-default" />
+        <span className="text-[10px] font-medium uppercase tracking-wider text-text-quaternary">
           History
         </span>
-        <div className="h-px flex-1 bg-card-border" />
+        <div className="h-px flex-1 bg-border-default" />
       </div>
       {conversations.map((entry) => (
         <ConversationEntry key={entry.id} entry={entry} />

@@ -22,7 +22,7 @@ const BASE_TEMPLATE = `<!DOCTYPE html>
 <title>GameForge Preview</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#0c0c0c}
+html,body{width:100%;height:100%;overflow:hidden;background:#09090b}
 #game-container{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
 #game-container canvas{display:block;max-width:100%;max-height:100%}
 </style>
@@ -186,21 +186,21 @@ export default function GamePreview({
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
-      <div className="flex h-11 shrink-0 items-center justify-between border-b border-card-border px-3 sm:h-12 sm:px-4">
+      <div className="flex h-11 shrink-0 items-center justify-between border-b border-border-default px-3 sm:h-12 sm:px-4">
         <div className="flex items-center gap-2 sm:gap-3">
-          <h3 className="font-mono text-sm font-medium text-foreground tracking-wide">GAME</h3>
-          <span className="hidden items-center gap-1.5 rounded-md bg-card px-2 py-0.5 text-xs text-muted border border-card-border sm:inline-flex">
+          <h3 className="font-mono text-sm font-medium text-text-primary tracking-wide">GAME</h3>
+          <span className="hidden items-center gap-1.5 rounded-full bg-surface-1 px-2 py-0.5 text-[10px] font-medium text-text-tertiary border border-border-default sm:inline-flex">
             <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
             Running
           </span>
           {hasErrors && (
             <button
               onClick={() => setErrorsOpen((v) => !v)}
-              className="flex items-center gap-1 rounded-md bg-red-500/10 px-2 py-0.5 text-xs text-red-400 border border-red-500/20 transition-colors hover:bg-red-500/20"
+              className="flex items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-medium text-red-400 border border-red-500/20 transition-colors duration-150 ease-in-out hover:bg-red-500/20"
             >
               <svg
-                width="12"
-                height="12"
+                width="14"
+                height="14"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -210,7 +210,7 @@ export default function GamePreview({
                 <line x1="15" y1="9" x2="9" y2="15" />
                 <line x1="9" y1="9" x2="15" y2="15" />
               </svg>
-              {errorCount} error{errorCount !== 1 ? "s" : ""}
+              <span className="tabular-nums">{errorCount}</span> error{errorCount !== 1 ? "s" : ""}
             </button>
           )}
         </div>
@@ -218,7 +218,7 @@ export default function GamePreview({
           {/* Restart */}
           <button
             onClick={handleRestart}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-card hover:text-foreground"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition-colors duration-150 ease-in-out hover:bg-surface-1 hover:text-text-primary"
             title="Restart game"
           >
             <svg
@@ -238,10 +238,10 @@ export default function GamePreview({
           {/* Toggle console */}
           <button
             onClick={() => setConsoleOpen((v) => !v)}
-            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
+            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-150 ease-in-out ${
               consoleOpen
-                ? "bg-accent-cyan/10 text-accent-cyan"
-                : "text-muted hover:bg-card hover:text-foreground"
+                ? "bg-accent-muted text-accent"
+                : "text-text-tertiary hover:bg-surface-1 hover:text-text-primary"
             }`}
             title="Toggle console logs"
           >
@@ -262,7 +262,7 @@ export default function GamePreview({
           {/* Open in new tab */}
           <button
             onClick={handleOpenNewTab}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-card hover:text-foreground"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition-colors duration-150 ease-in-out hover:bg-surface-1 hover:text-text-primary"
             title="Open in new tab"
           >
             <svg
@@ -284,17 +284,17 @@ export default function GamePreview({
       </div>
 
       {/* Game iframe area with bezel frame */}
-      <div className="relative flex-1 bg-[#0a0a0a] p-2 sm:p-3">
+      <div className="relative flex-1 bg-surface-0 p-2 sm:p-3">
         <div
-          className="relative h-full w-full overflow-hidden rounded-xl border border-white/[0.08]"
+          className="relative h-full w-full overflow-hidden rounded-xl border border-border-hover"
           style={{ boxShadow: "0 0 40px rgba(6, 182, 212, 0.08)" }}
         >
           {/* Loading overlay */}
           {loading && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0a0a0a]">
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-surface-0">
               <div className="flex flex-col items-center gap-3">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-cyan/20 border-t-accent-cyan" />
-                <p className="text-xs text-muted">Loading game...</p>
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent/20 border-t-accent" />
+                <p className="text-xs text-text-tertiary">Loading game...</p>
               </div>
             </div>
           )}
@@ -317,10 +317,10 @@ export default function GamePreview({
       {/* Collapsible error panel below the game preview */}
       {hasErrors && (
         <div className="shrink-0 border-t border-red-500/20 bg-[#1a0a0a]">
-          {/* Error panel header — always visible when errors exist */}
+          {/* Error panel header -- always visible when errors exist */}
           <button
             onClick={() => setErrorsOpen((v) => !v)}
-            className="flex w-full items-center justify-between px-3 py-2 transition-colors hover:bg-red-500/5"
+            className="flex w-full items-center justify-between px-3 py-2 transition-colors duration-150 ease-in-out hover:bg-red-500/5"
           >
             <div className="flex items-center gap-2">
               <svg
@@ -337,7 +337,7 @@ export default function GamePreview({
                 <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
               <span className="text-xs font-medium text-red-400">
-                {errorCount} Runtime Error{errorCount !== 1 ? "s" : ""}
+                <span className="tabular-nums">{errorCount}</span> Runtime Error{errorCount !== 1 ? "s" : ""}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -348,7 +348,7 @@ export default function GamePreview({
                   errorsRef.current = [];
                   setErrorsOpen(false);
                 }}
-                className="font-mono text-xs text-red-400/50 hover:text-red-400 transition-colors"
+                className="font-mono text-xs text-red-400/50 hover:text-red-400 transition-colors duration-150 ease-in-out"
               >
                 Clear
               </button>
@@ -377,7 +377,7 @@ export default function GamePreview({
                   className="border-b border-red-500/5 py-1.5 last:border-b-0"
                 >
                   <div className="flex items-start gap-2">
-                    <span className="mt-0.5 shrink-0 font-mono text-xs text-red-500/50">
+                    <span className="mt-0.5 shrink-0 font-mono text-xs text-red-500/50 tabular-nums">
                       {i + 1}.
                     </span>
                     <pre className="whitespace-pre-wrap break-all font-mono text-xs leading-relaxed text-red-300/80">
@@ -393,22 +393,22 @@ export default function GamePreview({
 
       {/* Collapsible console log panel */}
       {consoleOpen && (
-        <div className="flex max-h-48 flex-col border-t border-card-border bg-[#0e0e0e]">
+        <div className="flex max-h-48 flex-col border-t border-border-default bg-surface-0">
           <div className="flex shrink-0 items-center justify-between px-3 py-1.5">
-            <span className="font-mono text-xs text-muted">Console</span>
+            <span className="font-mono text-xs text-text-tertiary">Console</span>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => {
                   setLogs([]);
                   logsRef.current = [];
                 }}
-                className="font-mono text-xs text-muted hover:text-foreground transition-colors"
+                className="font-mono text-xs text-text-tertiary hover:text-text-primary transition-colors duration-150 ease-in-out"
               >
                 Clear
               </button>
               <button
                 onClick={() => setConsoleOpen(false)}
-                className="text-muted hover:text-foreground transition-colors"
+                className="text-text-tertiary hover:text-text-primary transition-colors duration-150 ease-in-out"
                 title="Close console"
               >
                 <svg
@@ -427,19 +427,19 @@ export default function GamePreview({
           </div>
           <div className="flex-1 overflow-y-auto px-3 pb-2">
             {logs.length === 0 ? (
-              <p className="py-2 font-mono text-xs text-muted/50">
+              <p className="py-2 font-mono text-xs text-text-quaternary">
                 No console output yet
               </p>
             ) : (
               logs.map((entry, i) => (
                 <div
                   key={i}
-                  className={`border-b border-white/[0.03] py-1 font-mono text-xs leading-relaxed ${
+                  className={`border-b border-border-default py-1 font-mono text-xs leading-relaxed ${
                     entry.type === "error"
                       ? "text-red-400"
                       : entry.type === "warn"
                         ? "text-yellow-400"
-                        : "text-muted"
+                        : "text-text-tertiary"
                   }`}
                 >
                   <span className="mr-2 inline-block w-3 shrink-0 text-center opacity-50">
