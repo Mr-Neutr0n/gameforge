@@ -18,6 +18,55 @@ from app.agents.config import APP_NAME, MAX_LLM_CALLS
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Session cleanup strategy
+# ---------------------------------------------------------------------------
+# ADK's InMemorySessionService stores sessions in a nested dict:
+#   service.sessions[app_name][user_id][session_id] -> Session
+#
+# After generation/iteration finishes we delete the session to free memory.
+# The primary path calls service.delete_session().  If that raises (e.g. the
+# underlying get_session lookup fails due to corrupt state), we fall back to
+# popping the key directly from the internal dict.  This two-tier approach
+# ensures sessions never leak even if the service API has transient issues.
+# ---------------------------------------------------------------------------
+
+
+def _delete_session_safe(
+    session_service: "InMemorySessionService",
+    app_name: str,
+    user_id: str,
+    session_id: str,
+) -> None:
+    """Delete an ADK session with a fallback to direct dict cleanup.
+
+    Attempts the official ``delete_session`` API first.  On any failure, falls
+    back to removing the key directly from the in-memory sessions dict so we
+    never leak sessions.
+    """
+    try:
+        session_service.delete_session(
+            app_name=app_name, user_id=user_id, session_id=session_id
+        )
+    except Exception:
+        logger.warning(
+            "delete_session failed for session_id=%s (app=%s, user=%s); "
+            "falling back to direct dict removal",
+            session_id, app_name, user_id,
+            exc_info=True,
+        )
+        # Fallback: pop directly from the internal sessions dict.
+        try:
+            session_service.sessions.get(app_name, {}).get(user_id, {}).pop(
+                session_id, None
+            )
+        except Exception:
+            logger.error(
+                "Direct dict cleanup also failed for session_id=%s", session_id,
+                exc_info=True,
+            )
+
+
 # Lazy imports to avoid circular dependency — agents are built at module
 # level, which imports tools/config that this module also uses.
 _runner: Runner | None = None
@@ -138,12 +187,7 @@ async def run_game_generation(
         logger.warning("Failed to read final session state for %s", session_id, exc_info=True)
 
     # Clean up the ADK session to free memory
-    try:
-        session_service.delete_session(
-            app_name=APP_NAME, user_id=user_id, session_id=session_id
-        )
-    except Exception:
-        logger.warning("Failed to delete ADK session %s", session_id, exc_info=True)
+    _delete_session_safe(session_service, APP_NAME, user_id, session_id)
 
 
 class _FinalCodeEvent:
@@ -234,9 +278,4 @@ async def run_game_iteration(
         logger.warning("Failed to read final session state for %s", session_id, exc_info=True)
 
     # Clean up the ADK session to free memory
-    try:
-        session_service.delete_session(
-            app_name=f"{APP_NAME}-iterator", user_id=user_id, session_id=session_id
-        )
-    except Exception:
-        logger.warning("Failed to delete ADK session %s", session_id, exc_info=True)
+    _delete_session_safe(session_service, f"{APP_NAME}-iterator", user_id, session_id)
