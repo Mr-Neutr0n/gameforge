@@ -8,6 +8,7 @@ POST /api/games/{id}/iterate — runs the iterator agent to modify an existing
 game based on a user message, streams SSE events, saves updated code to DB.
 """
 
+import asyncio
 import json
 import logging
 from datetime import datetime, timezone
@@ -23,6 +24,10 @@ from app.models import Conversation, ConversationRole, Game, StepType, User
 from app.rate_limit import limiter
 
 logger = logging.getLogger(__name__)
+
+# Maximum wall-clock seconds for generation and iteration SSE streams.
+GENERATE_TIMEOUT_SECONDS = 300  # 5 minutes
+ITERATE_TIMEOUT_SECONDS = 180   # 3 minutes
 
 router = APIRouter(prefix="/api/games", tags=["generate"])
 
@@ -133,136 +138,137 @@ async def generate_game(
                 db, game_id, ConversationRole.user, body.prompt, StepType.user
             )
 
-            async for event in run_game_generation(
-                prompt=body.prompt,
-                game_id=game_id,
-                template_type=body.template_type,
-            ):
-                # Check for synthetic final code event from runner
-                if hasattr(event, "final_game_code"):
-                    code = event.final_game_code
-                    if code and final_game_code is None:
-                        final_game_code = code
-                        yield _sse_event({
-                            "type": "code",
-                            "filename": "game.js",
-                            "content": code,
-                        })
-                        _save_conversation(
-                            db, game_id, ConversationRole.agent, code, StepType.code
-                        )
-                    continue
-
-                # Extract agent name from the event
-                agent_name = getattr(event, "author", None) or "coordinator"
-
-                # Check for new progress messages in state
-                if hasattr(event, "actions") and hasattr(event.actions, "state_delta"):
-                    state_delta = event.actions.state_delta
-                    if state_delta and "progress_messages" in state_delta:
-                        progress = state_delta["progress_messages"]
-                        # Emit any new progress messages
-                        for msg in progress[last_progress_index:]:
-                            yield _sse_event({
-                                "type": "thinking",
-                                "agent": agent_name,
-                                "content": msg,
-                            })
-                        last_progress_index = len(progress)
-
-                    # Check for game plan in state
-                    if state_delta and "game_plan" in state_delta:
-                        plan_content = state_delta["game_plan"]
-                        captured_plan = plan_content
-                        yield _sse_event({
-                            "type": "thinking",
-                            "agent": "planner",
-                            "content": plan_content if isinstance(plan_content, str) else json.dumps(plan_content),
-                        })
-                        # Save plan to conversations
-                        _save_conversation(
-                            db,
-                            game_id,
-                            ConversationRole.agent,
-                            plan_content if isinstance(plan_content, str) else json.dumps(plan_content),
-                            StepType.plan,
-                        )
-
-                    # Check for game code in state
-                    if state_delta and "game_files" in state_delta:
-                        game_files = state_delta["game_files"]
-                        if isinstance(game_files, dict) and "game.js" in game_files:
-                            code = game_files["game.js"]
+            async with asyncio.timeout(GENERATE_TIMEOUT_SECONDS):
+                async for event in run_game_generation(
+                    prompt=body.prompt,
+                    game_id=game_id,
+                    template_type=body.template_type,
+                ):
+                    # Check for synthetic final code event from runner
+                    if hasattr(event, "final_game_code"):
+                        code = event.final_game_code
+                        if code and final_game_code is None:
                             final_game_code = code
                             yield _sse_event({
                                 "type": "code",
                                 "filename": "game.js",
                                 "content": code,
                             })
-                            # Save code to conversations
+                            _save_conversation(
+                                db, game_id, ConversationRole.agent, code, StepType.code
+                            )
+                        continue
+
+                    # Extract agent name from the event
+                    agent_name = getattr(event, "author", None) or "coordinator"
+
+                    # Check for new progress messages in state
+                    if hasattr(event, "actions") and hasattr(event.actions, "state_delta"):
+                        state_delta = event.actions.state_delta
+                        if state_delta and "progress_messages" in state_delta:
+                            progress = state_delta["progress_messages"]
+                            # Emit any new progress messages
+                            for msg in progress[last_progress_index:]:
+                                yield _sse_event({
+                                    "type": "thinking",
+                                    "agent": agent_name,
+                                    "content": msg,
+                                })
+                            last_progress_index = len(progress)
+
+                        # Check for game plan in state
+                        if state_delta and "game_plan" in state_delta:
+                            plan_content = state_delta["game_plan"]
+                            captured_plan = plan_content
+                            yield _sse_event({
+                                "type": "thinking",
+                                "agent": "planner",
+                                "content": plan_content if isinstance(plan_content, str) else json.dumps(plan_content),
+                            })
+                            # Save plan to conversations
                             _save_conversation(
                                 db,
                                 game_id,
                                 ConversationRole.agent,
-                                code,
-                                StepType.code,
+                                plan_content if isinstance(plan_content, str) else json.dumps(plan_content),
+                                StepType.plan,
                             )
 
-                    # Check for validation result in state
-                    if state_delta and "validation_result" in state_delta:
-                        result_raw = state_delta["validation_result"]
-                        if isinstance(result_raw, str):
-                            try:
-                                result = json.loads(result_raw)
-                            except (json.JSONDecodeError, TypeError):
-                                result = {"valid": False, "errors": [result_raw]}
-                        elif isinstance(result_raw, dict):
-                            result = result_raw
-                        else:
-                            result = {"valid": False, "errors": ["Unknown validation result"]}
-
-                        is_valid = result.get("valid", False)
-                        errors = result.get("errors", [])
-                        warnings = result.get("warnings", [])
-
-                        yield _sse_event({
-                            "type": "validation",
-                            "valid": is_valid,
-                            "errors": errors,
-                            "warnings": warnings,
-                        })
-                        # Save validation to conversations
-                        _save_conversation(
-                            db,
-                            game_id,
-                            ConversationRole.agent,
-                            json.dumps(result),
-                            StepType.validate,
-                        )
-
-                        # If not valid, we're about to enter a fix iteration
-                        if not is_valid:
-                            fix_iteration += 1
-                            yield _sse_event({
-                                "type": "fix",
-                                "iteration": fix_iteration,
-                            })
-
-                # Check for text content in the event (agent responses)
-                if hasattr(event, "content") and event.content:
-                    parts = getattr(event.content, "parts", None)
-                    if parts:
-                        for part in parts:
-                            text = getattr(part, "text", None)
-                            if text and agent_name == "fixer":
-                                # Save fix to conversations
+                        # Check for game code in state
+                        if state_delta and "game_files" in state_delta:
+                            game_files = state_delta["game_files"]
+                            if isinstance(game_files, dict) and "game.js" in game_files:
+                                code = game_files["game.js"]
+                                final_game_code = code
+                                yield _sse_event({
+                                    "type": "code",
+                                    "filename": "game.js",
+                                    "content": code,
+                                })
+                                # Save code to conversations
                                 _save_conversation(
                                     db,
                                     game_id,
                                     ConversationRole.agent,
-                                    text,
-                                    StepType.fix,
+                                    code,
+                                    StepType.code,
                                 )
+
+                        # Check for validation result in state
+                        if state_delta and "validation_result" in state_delta:
+                            result_raw = state_delta["validation_result"]
+                            if isinstance(result_raw, str):
+                                try:
+                                    result = json.loads(result_raw)
+                                except (json.JSONDecodeError, TypeError):
+                                    result = {"valid": False, "errors": [result_raw]}
+                            elif isinstance(result_raw, dict):
+                                result = result_raw
+                            else:
+                                result = {"valid": False, "errors": ["Unknown validation result"]}
+
+                            is_valid = result.get("valid", False)
+                            errors = result.get("errors", [])
+                            warnings = result.get("warnings", [])
+
+                            yield _sse_event({
+                                "type": "validation",
+                                "valid": is_valid,
+                                "errors": errors,
+                                "warnings": warnings,
+                            })
+                            # Save validation to conversations
+                            _save_conversation(
+                                db,
+                                game_id,
+                                ConversationRole.agent,
+                                json.dumps(result),
+                                StepType.validate,
+                            )
+
+                            # If not valid, we're about to enter a fix iteration
+                            if not is_valid:
+                                fix_iteration += 1
+                                yield _sse_event({
+                                    "type": "fix",
+                                    "iteration": fix_iteration,
+                                })
+
+                    # Check for text content in the event (agent responses)
+                    if hasattr(event, "content") and event.content:
+                        parts = getattr(event.content, "parts", None)
+                        if parts:
+                            for part in parts:
+                                text = getattr(part, "text", None)
+                                if text and agent_name == "fixer":
+                                    # Save fix to conversations
+                                    _save_conversation(
+                                        db,
+                                        game_id,
+                                        ConversationRole.agent,
+                                        text,
+                                        StepType.fix,
+                                    )
 
             # After pipeline completes, try to get the final game code from
             # the last known state if we didn't capture it from deltas
@@ -324,6 +330,24 @@ async def generate_game(
             yield _sse_event({
                 "type": "complete",
                 "game_code": final_game_code,
+            })
+
+        except TimeoutError:
+            logger.error(
+                "Game generation timed out after %ds for game %s",
+                GENERATE_TIMEOUT_SECONDS,
+                game_id,
+            )
+            try:
+                game_record = db.query(Game).filter(Game.id == game_id).first()
+                if game_record:
+                    game_record.status = "failed"
+                    db.commit()
+            except Exception:
+                logger.warning("Failed to update game status to 'failed' for %s", game_id)
+            yield _sse_event({
+                "type": "error",
+                "message": "Generation timed out",
             })
 
         except Exception as e:
@@ -476,63 +500,64 @@ async def iterate_game(
                 db, game_id, ConversationRole.user, body.message, StepType.user
             )
 
-            async for event in run_game_iteration(
-                message=body.message,
-                game_id=game_id,
-                existing_code=existing_code,
-                conversation_context=conversation_context,
-            ):
-                # Check for synthetic final code event from runner
-                if hasattr(event, "final_game_code"):
-                    code = event.final_game_code
-                    if code and final_game_code is None:
-                        final_game_code = code
-                        yield _sse_event({
-                            "type": "code",
-                            "filename": "game.js",
-                            "content": code,
-                        })
-                    continue
-
-                agent_name = getattr(event, "author", None) or "iterator"
-
-                # Check for new progress messages in state
-                if hasattr(event, "actions") and hasattr(event.actions, "state_delta"):
-                    state_delta = event.actions.state_delta
-                    if state_delta and "progress_messages" in state_delta:
-                        progress = state_delta["progress_messages"]
-                        for msg in progress[last_progress_index:]:
-                            yield _sse_event({
-                                "type": "thinking",
-                                "agent": agent_name,
-                                "content": msg,
-                            })
-                        last_progress_index = len(progress)
-
-                    # Check for updated game code in state
-                    if state_delta and "game_files" in state_delta:
-                        game_files = state_delta["game_files"]
-                        if isinstance(game_files, dict) and "game.js" in game_files:
-                            code = game_files["game.js"]
+            async with asyncio.timeout(ITERATE_TIMEOUT_SECONDS):
+                async for event in run_game_iteration(
+                    message=body.message,
+                    game_id=game_id,
+                    existing_code=existing_code,
+                    conversation_context=conversation_context,
+                ):
+                    # Check for synthetic final code event from runner
+                    if hasattr(event, "final_game_code"):
+                        code = event.final_game_code
+                        if code and final_game_code is None:
                             final_game_code = code
                             yield _sse_event({
                                 "type": "code",
                                 "filename": "game.js",
                                 "content": code,
                             })
+                        continue
 
-                # Check for text content (iterator's summary response)
-                if hasattr(event, "content") and event.content:
-                    parts = getattr(event.content, "parts", None)
-                    if parts:
-                        for part in parts:
-                            text = getattr(part, "text", None)
-                            if text and agent_name == "iterator":
+                    agent_name = getattr(event, "author", None) or "iterator"
+
+                    # Check for new progress messages in state
+                    if hasattr(event, "actions") and hasattr(event.actions, "state_delta"):
+                        state_delta = event.actions.state_delta
+                        if state_delta and "progress_messages" in state_delta:
+                            progress = state_delta["progress_messages"]
+                            for msg in progress[last_progress_index:]:
                                 yield _sse_event({
                                     "type": "thinking",
-                                    "agent": "iterator",
-                                    "content": text,
+                                    "agent": agent_name,
+                                    "content": msg,
                                 })
+                            last_progress_index = len(progress)
+
+                        # Check for updated game code in state
+                        if state_delta and "game_files" in state_delta:
+                            game_files = state_delta["game_files"]
+                            if isinstance(game_files, dict) and "game.js" in game_files:
+                                code = game_files["game.js"]
+                                final_game_code = code
+                                yield _sse_event({
+                                    "type": "code",
+                                    "filename": "game.js",
+                                    "content": code,
+                                })
+
+                    # Check for text content (iterator's summary response)
+                    if hasattr(event, "content") and event.content:
+                        parts = getattr(event.content, "parts", None)
+                        if parts:
+                            for part in parts:
+                                text = getattr(part, "text", None)
+                                if text and agent_name == "iterator":
+                                    yield _sse_event({
+                                        "type": "thinking",
+                                        "agent": "iterator",
+                                        "content": text,
+                                    })
 
             if final_game_code is None:
                 logger.warning(
@@ -591,6 +616,24 @@ async def iterate_game(
             yield _sse_event({
                 "type": "complete",
                 "game_code": final_game_code,
+            })
+
+        except TimeoutError:
+            logger.error(
+                "Game iteration timed out after %ds for game %s",
+                ITERATE_TIMEOUT_SECONDS,
+                game_id,
+            )
+            try:
+                game_record = db.query(Game).filter(Game.id == game_id).first()
+                if game_record:
+                    game_record.status = "failed"
+                    db.commit()
+            except Exception:
+                logger.warning("Failed to update game status to 'failed' for %s", game_id)
+            yield _sse_event({
+                "type": "error",
+                "message": "Generation timed out",
             })
 
         except Exception as e:
