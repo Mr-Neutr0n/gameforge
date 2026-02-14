@@ -659,6 +659,19 @@ function GamePreviewEmpty({
   isGenerating: boolean;
   onGenerate?: () => void;
 }) {
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!isGenerating) {
+      setElapsed(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setElapsed((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isGenerating]);
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-11 shrink-0 items-center border-b border-border-default px-3 sm:h-12 sm:px-4">
@@ -684,6 +697,11 @@ function GamePreviewEmpty({
                 <p className="mt-1 text-xs text-text-tertiary">
                   Watch the activity feed for progress
                 </p>
+                {elapsed >= 120 && (
+                  <p className="mt-2 text-xs text-text-tertiary animate-pulse">
+                    Taking longer than expected...
+                  </p>
+                )}
               </div>
             </>
           ) : (

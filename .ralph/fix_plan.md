@@ -18,7 +18,7 @@
 
 ## Phase 3: Frontend Robustness
 - [x] TASK-013: Add SSE timeout and error handling — in `frontend/src/lib/api.ts`, add: (a) AbortController with 5-minute timeout for streamGameGeneration and streamGameIteration; (b) in the fetch error handler, distinguish between timeout (show "Generation timed out") vs network error (show "Connection lost"); (c) ensure AbortController.abort() is called on component unmount. In workspace page, show appropriate toast messages for each error type.
-- [ ] TASK-014: Add long-running generation UI feedback — in workspace page `GamePreviewEmpty` component, when `isGenerating` is true for more than 2 minutes (track with useEffect + elapsed state), show additional text: "Taking longer than expected..." below the loading spinner. This is purely a UI hint, no functional change needed.
+- [x] TASK-014: Add long-running generation UI feedback — in workspace page `GamePreviewEmpty` component, when `isGenerating` is true for more than 2 minutes (track with useEffect + elapsed state), show additional text: "Taking longer than expected..." below the loading spinner. This is purely a UI hint, no functional change needed.
 
 ## Phase 4: Verification
 - [ ] TASK-015: Run full verification — run `cd frontend && npm run build` to confirm zero build errors. Run `cd backend && python -m pytest tests/ -v` to confirm all tests pass (old + new). List any remaining warnings. Create `.ralph/docs/generated/audit-report.md` summarizing: total issues found, issues fixed, test coverage added, remaining known limitations.
