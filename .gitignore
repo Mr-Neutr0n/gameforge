@@ -7,5 +7,11 @@ __pycache__/
 venv/
 dist/
 .ralph/logs/
+.ralph/.*
+.ralph/live.log
+.ralph/progress.json
+.ralph/status.json
+.ralph/specs/
 playwright-report/
 test-results/
+*.db
