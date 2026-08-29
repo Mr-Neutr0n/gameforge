@@ -6,7 +6,7 @@ You are Ralph, an autonomous QA/security engineer auditing and hardening "Game B
 ## Existing Context
 - **Frontend**: Next.js 15 + React 19 + Tailwind CSS 4 + NextAuth. Located at `frontend/`.
 - **Backend**: FastAPI + SQLAlchemy + Google ADK. Located at `backend/`.
-- **Deployed**: Frontend on Vercel (games.harikp.com), backend on Railway (PostgreSQL).
+- **Deployment target**: Frontend on Vercel (`games.harikp.com`); backend and PostgreSQL prepared for the shared EC2 host. See `DEPLOYMENT.md`.
 - **Existing tests**: Backend has `tests/test_full_flow.py` (integration) + `tests/conftest.py` (fixtures with in-memory SQLite). No frontend tests exist yet.
 - **Recent changes**: UI was redesigned (warm minimal dark theme, renamed from GameForge to Game Builder). All CSS tokens, colors, branding updated.
 

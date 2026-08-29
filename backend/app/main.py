@@ -19,15 +19,18 @@ def _patched_default(self, o):
     return _original_default(self, o)
 
 json.JSONEncoder.default = _patched_default
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 load_dotenv()
 
-from app.database import Base, engine  # noqa: E402
+from app.database import Base, engine, get_db  # noqa: E402
 import app.models  # noqa: E402, F401 — register models with Base.metadata
 from app.rate_limit import limiter  # noqa: E402
 from app.routes.auth import router as auth_router  # noqa: E402
@@ -82,6 +85,19 @@ app.include_router(audit_router)
 
 @app.get("/api/health")
 async def health_check():
+    return {"status": "ok", "service": "gameforge-api"}
+
+
+@app.get("/api/ready")
+def readiness_check(db: Session = Depends(get_db)):
+    try:
+        db.execute(text("SELECT 1"))
+    except SQLAlchemyError:
+        logger.warning("Readiness check failed: database unavailable")
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"status": "unavailable", "service": "gameforge-api"},
+        )
     return {"status": "ok", "service": "gameforge-api"}
 
 

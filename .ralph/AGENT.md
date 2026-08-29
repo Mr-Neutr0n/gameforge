@@ -12,7 +12,7 @@ lovable-for-games/
 │   ├── src/lib/       # API client (api.ts), auth helpers (auth.ts)
 │   ├── public/        # Favicons, OG image, llms.txt
 │   └── e2e/           # Playwright E2E tests (being created)
-├── backend/           → FastAPI (Railway) — Google ADK agents, PostgreSQL
+├── backend/           → FastAPI (shared EC2) — Google ADK agents, PostgreSQL
 │   ├── app/main.py    # FastAPI app entry, CORS, rate limiting
 │   ├── app/models.py  # SQLAlchemy models: User, Game, Conversation, AuditResult
 │   ├── app/auth.py    # JWT + OAuth (Google, GitHub)

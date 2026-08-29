@@ -5,7 +5,7 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://localhost:5432/gameforge")
 
-# Handle Railway's postgres:// → postgresql:// conversion
+# Accept the legacy postgres:// scheme used by some providers.
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
