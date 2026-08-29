@@ -1,9 +1,10 @@
 import enum
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from sqlalchemy import (
     Boolean,
+    Date,
     DateTime,
     Enum,
     ForeignKey,
@@ -132,6 +133,15 @@ class Conversation(Base):
 
     def __repr__(self) -> str:
         return f"<Conversation {self.role.value}:{self.step_type.value}>"
+
+
+class DailyGenerationQuota(Base):
+    __tablename__ = "daily_generation_quotas"
+
+    quota_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    scope: Mapped[str] = mapped_column(String(20), primary_key=True)
+    scope_key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
 
 class AuditResult(Base):

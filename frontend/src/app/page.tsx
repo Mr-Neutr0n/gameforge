@@ -3,6 +3,7 @@
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { trackEvent } from "@/lib/analytics";
 
 const EXAMPLE_GAMES = [
   {
@@ -106,6 +107,13 @@ export default function Home() {
     }
   }, [status, router]);
 
+  const handleSignIn = (provider?: "google" | "github") => {
+    trackEvent("login_started", { method: provider || "chooser" });
+    return provider
+      ? signIn(provider, { callbackUrl: "/dashboard" })
+      : signIn();
+  };
+
   if (status === "loading") {
     return (
       <main className="flex min-h-screen items-center justify-center">
@@ -126,7 +134,7 @@ export default function Home() {
           Game Builder
         </div>
         <button
-          onClick={() => signIn()}
+          onClick={() => handleSignIn()}
           className="rounded-lg border border-border-default bg-surface-1 px-3 py-1.5 text-xs font-medium text-text-primary transition-colors duration-150 ease-in-out hover:bg-surface-2 hover:border-border-hover sm:px-4 sm:py-2"
         >
           Sign in
@@ -137,7 +145,7 @@ export default function Home() {
       <section className="flex flex-1 flex-col items-center justify-center px-4 pb-12 pt-10 sm:px-6 sm:pb-16 sm:pt-12 md:pt-20">
         <div className="flex flex-col items-center gap-5 text-center sm:gap-6">
           <div className="rounded-full border border-border-default bg-surface-1 px-3 py-1 text-[10px] font-medium text-text-tertiary sm:px-4 sm:py-1.5 sm:text-xs">
-            Powered by Gemini + Phaser.js
+            Powered by GPT + Phaser.js
           </div>
           <h1 className="max-w-2xl text-3xl font-bold leading-tight tracking-tight text-text-primary sm:text-4xl md:text-6xl">
             Describe a game,{" "}
@@ -147,20 +155,20 @@ export default function Home() {
           </h1>
           <p className="max-w-lg text-sm text-text-tertiary sm:text-base md:text-lg">
             Game Builder turns your ideas into playable browser games using AI
-            multi-agent orchestration. No code required.
+            generation pipeline. No code required.
           </p>
 
           {/* Auth buttons */}
           <div className="mt-2 flex w-full max-w-sm flex-col gap-3 sm:mt-4 sm:w-auto sm:flex-row">
             <button
-              onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+              onClick={() => handleSignIn("google")}
               className="flex items-center justify-center gap-2.5 rounded-lg bg-text-primary px-5 py-3 text-xs font-medium text-surface-0 transition-all duration-150 hover:bg-[#d4d1ca] sm:px-6"
             >
               <GoogleIcon />
               Continue with Google
             </button>
             <button
-              onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
+              onClick={() => handleSignIn("github")}
               className="flex items-center justify-center gap-2.5 rounded-lg border border-border-default bg-surface-1 px-5 py-3 text-xs font-medium text-text-primary transition-colors duration-150 ease-in-out hover:bg-surface-2 hover:border-border-hover sm:px-6"
             >
               <GitHubIcon />
@@ -192,7 +200,7 @@ export default function Home() {
             <span className="ml-2">by harikp.com</span>
           </div>
           <div className="text-xs text-text-tertiary">
-            Built with Next.js, FastAPI &amp; Google ADK
+            Built with Next.js, FastAPI &amp; Azure OpenAI
           </div>
         </div>
       </footer>

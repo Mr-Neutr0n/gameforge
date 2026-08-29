@@ -4,7 +4,7 @@
 
 ## What is Game Builder?
 
-Game Builder is an AI-powered game builder that generates playable Phaser.js browser games from natural language descriptions. Users describe their game idea in plain text, and a multi-agent AI system plans, generates, validates, and fixes the game code automatically.
+Game Builder is an AI-powered game builder that generates playable Phaser.js browser games from natural language descriptions. Users describe their game idea in plain text, and an AI pipeline plans, generates, validates, and fixes the game code automatically.
 
 ## How it works
 
@@ -12,20 +12,20 @@ Game Builder is an AI-powered game builder that generates playable Phaser.js bro
 2. A Planner agent creates a structured game design with scenes, mechanics, and assets.
 3. A Code Generator agent writes complete Phaser.js game code using arcade physics and drawn graphics.
 4. A Validator agent checks the code for correctness and common issues.
-5. A Fixer agent corrects any problems found by the validator (up to 3 iterations).
+5. A repair pass corrects structural problems found by local validation.
 6. The user can iterate on the game by sending chat messages to modify it.
 
 ## Tech stack
 
 - **Frontend**: Next.js 15, TypeScript, Tailwind CSS, NextAuth.js
-- **Backend**: FastAPI, SQLAlchemy, Google ADK (Agent Development Kit)
-- **AI Model**: Google Gemini 2.5 Flash via multi-agent orchestration
+- **Backend**: FastAPI and SQLAlchemy
+- **AI Model**: GPT through Azure OpenAI
 - **Game Engine**: Phaser 3 (loaded from CDN, runs in browser)
 - **Database**: PostgreSQL
 
 ## Key features
 
-- Text-to-game generation with AI agents
+- Text-to-game generation with an AI pipeline
 - Real-time streaming of agent progress via SSE
 - Iterative game modification through chat
 - Automated quality audits (logic, UI, code quality)

@@ -20,6 +20,7 @@ import {
   type Conversation,
   type GameWithConversation,
 } from "@/lib/api";
+import { trackEvent } from "@/lib/analytics";
 
 export default function WorkspacePage() {
   const params = useParams();
@@ -88,6 +89,9 @@ export default function WorkspacePage() {
       setStartTime(Date.now());
       setEvents([]);
       setGenerateError(null);
+      trackEvent("game_generation_started", {
+        template: templateType || "custom",
+      });
 
       const controller = streamGameGeneration(
         gameId,
@@ -116,6 +120,7 @@ export default function WorkspacePage() {
           onError: (err) => {
             setGenerateError(err.message);
             showToast(err.message, "error");
+            trackEvent("game_generation_failed");
             setIsGenerating(false);
           },
           onComplete: () => {
@@ -124,6 +129,7 @@ export default function WorkspacePage() {
             setHasUnsavedChanges(false);
             setLastSavedAt(Date.now());
             showToast("Game generated successfully", "success");
+            trackEvent("game_generation_completed");
             // Refresh game data (title, conversations) from DB after generation
             getGame(gameId)
               .then((g) => {
@@ -181,6 +187,7 @@ export default function WorkspacePage() {
       setIsGenerating(true);
       setStartTime(Date.now());
       setGenerateError(null);
+      trackEvent("game_iteration_started");
 
       // Add a user message event to the feed
       setEvents((prev) => [
@@ -214,6 +221,7 @@ export default function WorkspacePage() {
         onError: (err) => {
           setGenerateError(err.message);
           showToast(err.message, "error");
+          trackEvent("game_iteration_failed");
           setIsGenerating(false);
         },
         onComplete: () => {
@@ -222,6 +230,7 @@ export default function WorkspacePage() {
           setHasUnsavedChanges(false);
           setLastSavedAt(Date.now());
           showToast("Game updated successfully", "success");
+          trackEvent("game_iteration_completed");
           // Refresh conversation history from DB after iteration
           getGame(gameId)
             .then((g) => {

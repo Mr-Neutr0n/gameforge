@@ -33,7 +33,7 @@ test.describe("Landing page", () => {
 
   test("Powered by pill is visible", async ({ page }) => {
     await expect(
-      page.getByText("Powered by Gemini + Phaser.js"),
+      page.getByText("Powered by GPT + Phaser.js"),
     ).toBeVisible();
   });
 

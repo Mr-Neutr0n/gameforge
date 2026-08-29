@@ -6,7 +6,7 @@ whitespace handling (tabs, newlines), and edge cases for all regex-based checks.
 
 import pytest
 
-from app.agents.tools import validate_phaser_config
+from app.agents.validation import validate_phaser_code as validate_phaser_config
 from app.audits.code_audit import (
     _check_no_eval,
     _check_no_var_declarations,
@@ -173,8 +173,8 @@ class TestValidatePhaserConfig:
 
     def test_module_export_scene(self):
         result = validate_phaser_config(MODULE_EXPORT_SCENE)
-        assert result["valid"] is True
-        assert result["errors"] == []
+        assert result["valid"] is False
+        assert "Browser game must not use modules" in result["errors"]
 
     def test_parameterized_methods(self):
         result = validate_phaser_config(PARAMETERIZED_METHODS)

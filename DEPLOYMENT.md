@@ -8,7 +8,7 @@ This repository does not create AWS resources, DNS records, OAuth applications, 
 - Security-group access for TCP 80 and 443, plus restricted administrative access for SSH.
 - An `A` or `AAAA` record for `api.games.harikp.com` pointing to the host.
 - The frontend deployment at `games.harikp.com`.
-- Production JWT, OAuth, Gemini, and database secrets. Do not store them in Git.
+- Production JWT, OAuth, Azure OpenAI, and database secrets. Do not store them in Git.
 
 ## Bootstrap the host
 
@@ -60,7 +60,9 @@ sudo chown root:gameforge /etc/gameforge/gameforge.env
 sudo chmod 0640 /etc/gameforge/gameforge.env
 ```
 
-Use `FRONTEND_URL=https://games.harikp.com` and `ENVIRONMENT=production`. The public API hostname belongs in the frontend's `NEXT_PUBLIC_API_URL=https://api.games.harikp.com`; the backend does not read that frontend variable.
+Use `FRONTEND_URL=https://games.harikp.com`, `ENVIRONMENT=production`, `AZURE_MODEL_TEXT=gpt-5-6-luna`, `GLOBAL_GENERATIONS_PER_DAY=100`, and `USER_GENERATIONS_PER_DAY=2`. The Azure endpoint and key must belong to the approved Azure OpenAI resource. The public API hostname belongs in the frontend's `NEXT_PUBLIC_API_URL=https://api.games.harikp.com`; the backend does not read that frontend variable.
+
+Generation and iteration share PostgreSQL-backed UTC-day quotas. They allow 100 accepted attempts globally and 2 per authenticated user. The transaction takes a PostgreSQL advisory lock before checking and incrementing both counters, so restarts and concurrent requests cannot bypass the limits.
 
 ## Build a release artifact
 
@@ -148,6 +150,10 @@ curl -fsS https://api.games.harikp.com/api/ready
 ```
 
 The checked-in Nginx file listens on HTTP so Certbot can add its managed TLS directives. It disables proxy buffering and caching so generation and iteration SSE events reach clients as they arrive. The 600-second proxy timeouts exceed the frontend generation timeout.
+
+## Account-placement debt
+
+The shared host, Elastic IP, IAM role, encrypted EBS volume, S3 backups, alarms, and related parameters currently live in AWS Organizations management account `018701996146`. This is temporary architecture debt. Migrate the complete resource set to the intended member account in one planned cutover, then update DNS only after direct readiness checks pass against the replacement host.
 
 ## Roll back
 

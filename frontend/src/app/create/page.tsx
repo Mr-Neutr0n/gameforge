@@ -6,6 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import AppLayout from "@/components/AppLayout";
 import { useToast } from "@/components/Toast";
 import { createGame, type CreateGameRequest } from "@/lib/api";
+import { trackEvent } from "@/lib/analytics";
 
 type TemplateType = "platformer" | "topdown" | "shooter" | "puzzle";
 
@@ -168,6 +169,9 @@ function CreateContent() {
 
     setGenerating(true);
     setError(null);
+    trackEvent("game_creation_started", {
+      template: selectedTemplate || "custom",
+    });
 
     try {
       const data: CreateGameRequest = {
@@ -178,11 +182,17 @@ function CreateContent() {
       }
 
       const game = await createGame(data);
+      trackEvent("game_created", {
+        template: selectedTemplate || "custom",
+      });
       router.push(`/workspace/${game.id}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to create game";
       setError(message);
       showToast(message, "error");
+      trackEvent("game_creation_failed", {
+        template: selectedTemplate || "custom",
+      });
       setGenerating(false);
     }
   };

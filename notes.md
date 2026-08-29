@@ -6,23 +6,22 @@ Building. Shared-EC2 deployment files are prepared in the repository. No deploym
 
 ## Architecture
 
-Multi-agent game builder using Google ADK:
 - **Frontend:** Next.js + Tailwind + NextAuth on Vercel at `games.harikp.com`
-- **Backend:** FastAPI + Google ADK + Gemini 2.5 Flash on the shared Ubuntu EC2 host at `api.games.harikp.com`
+- **Backend:** FastAPI + Azure OpenAI GPT on the shared Ubuntu EC2 host at `api.games.harikp.com`
 - **DB:** Dedicated local PostgreSQL database and role on the shared EC2 host
 - **Game runtime:** Sandboxed iframe with Phaser 3 CDN
 
-## Agent System (Google ADK)
+## Generation pipeline
 
-- Coordinator → SequentialAgent orchestrating:
-  - Planner → breaks prompt into game design doc
-  - Generator → writes Phaser.js code
-  - Validator → checks code quality
-  - Fixer (LoopAgent, max 3) → fixes validation errors
-- Iterator → handles user feedback post-generation
-- All stream via SSE to frontend activity feed
+- Planner creates a structured game design.
+- Generator writes complete Phaser.js code.
+- Local validation checks required structure and blocks modules and remote assets.
+- One GPT repair pass runs only when structural validation fails.
+- Iterator applies user feedback to existing games.
+- Progress streams to the frontend over SSE.
+- PostgreSQL atomically enforces 100 generation or iteration attempts globally and 2 per authenticated user per UTC day.
 
-## Audit Pipeline
+## Audit pipeline
 
 - Logic audit: scene exists, game loop, input handlers, no crashes
 - UI audit: valid dimensions, colors, font sizes, viewport
@@ -40,7 +39,7 @@ Multi-agent game builder using Google ADK:
 - [ ] Issue and test the `api.games.harikp.com` TLS certificate with Certbot.
 - [ ] Update Google and GitHub callbacks for `games.harikp.com`.
 - [ ] Verify local and public `/api/health` and `/api/ready` responses.
-- [ ] Test Google and GitHub sign-in, game generation, and iteration through the production frontend.
+- [ ] Test Google and GitHub sign-in, game generation, iteration, and quota responses through the production frontend.
 - [ ] Schedule `pg_dump` backups, copy them off-host, and complete a restore test.
 
 See `DEPLOYMENT.md` for commands, rollback, logs, and backup procedures.

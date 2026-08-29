@@ -11,7 +11,7 @@ Tests cover edge cases beyond those in test_validators.py:
 
 import pytest
 
-from app.agents.tools import validate_phaser_config
+from app.agents.validation import validate_phaser_code as validate_phaser_config
 
 
 class TestValidatePhaserConfigEdgeCases:
@@ -218,7 +218,8 @@ const config = { scene: [MainScene] };
 const game = new Phaser.Game(config);
 """
         result = validate_phaser_config(code)
-        assert result["valid"] is True
+        assert result["valid"] is False
+        assert "Browser game must not use modules" in result["errors"]
 
     def test_export_class_no_default(self):
         code = """\
@@ -231,7 +232,8 @@ const config = { scene: [MainScene] };
 const game = new Phaser.Game(config);
 """
         result = validate_phaser_config(code)
-        assert result["valid"] is True
+        assert result["valid"] is False
+        assert "Browser game must not use modules" in result["errors"]
 
     def test_arrow_functions_all_patterns(self):
         """Arrow functions for all methods: () => and param =>."""

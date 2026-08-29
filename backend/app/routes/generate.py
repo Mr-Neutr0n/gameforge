@@ -1,6 +1,6 @@
 """SSE streaming endpoints for game generation and iteration.
 
-POST /api/games/{id}/generate — kicks off the ADK coordinator agent pipeline,
+POST /api/games/{id}/generate — kicks off the Azure OpenAI generation pipeline,
 streams progress events to the frontend via Server-Sent Events, saves the
 final game code and conversation history to the database.
 
@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 from app.auth import get_current_user
 from app.database import get_db
 from app.models import Conversation, ConversationRole, Game, StepType, User
-from app.rate_limit import limiter
+from app.rate_limit import consume_generation_quota, limiter
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +81,7 @@ async def generate_game(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Start game generation via ADK agents, streaming progress via SSE.
+    """Start Azure OpenAI game generation, streaming progress via SSE.
 
     Streams events:
         - {"type": "thinking", "agent": "<name>", "content": "..."}
@@ -108,6 +108,7 @@ async def generate_game(
             status_code=status.HTTP_409_CONFLICT,
             detail="Game is already being generated",
         )
+    consume_generation_quota(db, user.id)
     game.status = "generating"
 
     # Update the game prompt if different
@@ -116,7 +117,7 @@ async def generate_game(
     db.commit()
 
     async def event_stream():
-        """Async generator that runs the ADK pipeline and yields SSE events."""
+        """Async generator that runs the generation pipeline and yields SSE events."""
         from app.agents.runner import run_game_generation
 
         # Track state for extracting structured events
@@ -473,6 +474,7 @@ async def iterate_game(
             detail="Game has no code to iterate on. Generate a game first.",
         )
 
+    consume_generation_quota(db, user.id)
     game.status = "generating"
     db.commit()
 

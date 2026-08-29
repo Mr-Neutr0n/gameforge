@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import Providers from "@/components/Providers";
 import "./globals.css";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -106,6 +107,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
+        <GoogleAnalytics measurementId="G-4CTZ3LHWHE" />
         <Providers>{children}</Providers>
       </body>
     </html>

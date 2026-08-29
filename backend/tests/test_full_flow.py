@@ -2,15 +2,15 @@
 
 Tests the complete flow:
 1. Create a game with a platformer prompt
-2. Run the full agent pipeline (mocked ADK — generates working Phaser code)
+2. Run the full generation pipeline (mocked Azure client runner)
 3. Assert game_code is generated and non-empty
 4. Assert game_code contains `new Phaser.Game`
 5. Run all 3 audits and assert logic audit passes
 6. Test iteration with "make the player red instead of blue"
 7. Assert updated code contains the color change
 
-Uses an in-memory SQLite database and mocks the ADK runner to avoid
-real Gemini API calls while exercising the full route → DB → audit stack.
+Uses an in-memory SQLite database and mocks the generation runner to avoid
+real Azure OpenAI calls while exercising the full route → DB → audit stack.
 """
 
 import json
@@ -24,12 +24,12 @@ from tests.conftest import SAMPLE_ITERATED_CODE, SAMPLE_PLATFORMER_CODE
 
 
 # ---------------------------------------------------------------------------
-# Helpers — mock ADK event factories
+# Helpers - mock pipeline event factories
 # ---------------------------------------------------------------------------
 
 
 class _MockActions:
-    """Mimics google.adk.events.Event.actions with a state_delta."""
+    """Provides the state delta shape consumed by the SSE route."""
 
     def __init__(self, state_delta: dict | None = None):
         self.state_delta = state_delta
@@ -46,7 +46,7 @@ class _MockContent:
 
 
 class _MockEvent:
-    """Mimics a google.adk.events.Event yielded by Runner.run_async."""
+    """Provides the event shape yielded by the generation runner."""
 
     def __init__(
         self,
@@ -60,7 +60,7 @@ class _MockEvent:
 
 
 def _make_generation_events(game_code: str) -> list[_MockEvent]:
-    """Build a sequence of mock ADK events simulating the full pipeline."""
+    """Build mock events simulating the full pipeline."""
     plan = json.dumps({
         "game_title": "Blue Square Platformer",
         "game_type": "platformer",
@@ -122,7 +122,7 @@ def _make_generation_events(game_code: str) -> list[_MockEvent]:
 
 
 def _make_iteration_events(updated_code: str) -> list[_MockEvent]:
-    """Build mock ADK events simulating an iteration run."""
+    """Build mock events simulating an iteration run."""
     return [
         _MockEvent(
             author="iterator",

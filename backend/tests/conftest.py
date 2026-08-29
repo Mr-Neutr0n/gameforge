@@ -14,7 +14,9 @@ os.environ.setdefault(
     "DATABASE_URL", "postgresql://test:test@localhost:5432/gameforge_test"
 )
 os.environ["JWT_SECRET"] = "test-secret-key-for-testing-only-32bytes"
-os.environ["GOOGLE_API_KEY"] = "test-api-key"
+os.environ["AZURE_OPENAI_ENDPOINT"] = "https://example.openai.azure.com"
+os.environ["AZURE_OPENAI_API_KEY"] = "test-api-key"
+os.environ["AZURE_MODEL_TEXT"] = "test-model"
 os.environ["FRONTEND_URL"] = "http://localhost:3000"
 os.environ["ENVIRONMENT"] = "test"
 
