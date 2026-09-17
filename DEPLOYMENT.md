@@ -151,9 +151,9 @@ curl -fsS https://api.games.harikp.com/api/ready
 
 The checked-in Nginx file listens on HTTP so Certbot can add its managed TLS directives. It disables proxy buffering and caching so generation and iteration SSE events reach clients as they arrive. The 600-second proxy timeouts exceed the frontend generation timeout.
 
-## Account-placement debt
+## Account placement
 
-The shared host, Elastic IP, IAM role, encrypted EBS volume, S3 backups, alarms, and related parameters currently live in AWS Organizations management account `018701996146`. This is temporary architecture debt. Migrate the complete resource set to the intended member account in one planned cutover, then update DNS only after direct readiness checks pass against the replacement host.
+Migrated 2026-09-17: the shared host, Elastic IP (unchanged, so DNS needed no change), IAM role, encrypted EBS volume, S3 backups, alarms, and SSM parameters now live in the `Hari Personal` member account `514903006142`. The bucket is `hari-sideprojects-prod-514903006142-ap-south-1`. The old management-account resources were removed.
 
 ## Roll back
 
